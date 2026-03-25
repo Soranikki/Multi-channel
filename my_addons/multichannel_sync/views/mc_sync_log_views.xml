@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Search view ─────────────────────────────────────────────────── -->
+    <record id="view_mc_sync_log_search" model="ir.ui.view">
+        <field name="name">mc.sync.log.search</field>
+        <field name="model">mc.sync.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Sync Logs">
+                <field name="message"/>
+                <field name="reference"/>
+                <field name="channel_id"/>
+                <filter name="errors" string="Errors Only" domain="[('log_type','=','error')]"/>
+                <filter name="warnings" string="Warnings" domain="[('log_type','=','warning')]"/>
+                <filter name="info" string="Info" domain="[('log_type','=','info')]"/>
+                <separator/>
+                <filter name="today" string="Today" domain="[('timestamp','&gt;=', (context_today()).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter name="group_channel" string="Channel" context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_type" string="Log Type" context="{'group_by': 'log_type'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'timestamp:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── List view ──────────────────────────────────────────────────── -->
+    <record id="view_mc_sync_log_list" model="ir.ui.view">
+        <field name="name">mc.sync.log.list</field>
+        <field name="model">mc.sync.log</field>
+        <field name="arch" type="xml">
+            <tree string="Sync Logs"
+                decoration-danger="log_type == 'error'"
+                decoration-warning="log_type == 'warning'"
+                create="false"
+                delete="false">
+                <field name="timestamp"/>
+                <field name="log_type" widget="badge"
+                    decoration-danger="log_type == 'error'"
+                    decoration-warning="log_type == 'warning'"
+                    decoration-info="log_type == 'info'"/>
+                <field name="channel_id"/>
+                <field name="reference"/>
+                <field name="message"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Window action ──────────────────────────────────────────────── -->
+    <record id="action_mc_sync_log" model="ir.actions.act_window">
+        <field name="name">Sync Logs</field>
+        <field name="res_model">mc.sync.log</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_mc_sync_log_search"/>
+        <field name="context">{'search_default_group_channel': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No sync logs yet.
+            </p>
+            <p>
+                Logs are automatically created during pipeline processing.
+                Errors and warnings appear here for diagnosis.
+            </p>
+        </field>
+    </record>
+
+    <!-- ── Error log action (pre-filtered to errors only) ─────────────── -->
+    <record id="action_mc_sync_log_errors" model="ir.actions.act_window">
+        <field name="name">Error Log</field>
+        <field name="res_model">mc.sync.log</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_mc_sync_log_search"/>
+        <field name="domain">[('log_type', '=', 'error')]</field>
+        <field name="context">{'search_default_group_channel': 1}</field>
+    </record>
+
+</odoo>

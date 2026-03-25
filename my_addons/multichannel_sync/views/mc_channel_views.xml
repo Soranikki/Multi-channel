@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Search view ─────────────────────────────────────────────────── -->
+    <record id="view_mc_channel_search" model="ir.ui.view">
+        <field name="name">mc.channel.search</field>
+        <field name="model">mc.channel</field>
+        <field name="arch" type="xml">
+            <search string="Search Channels">
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
+                <filter name="error" string="Error" domain="[('sync_status','=','error')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_code" string="Channel Type" context="{'group_by': 'code'}"/>
+                    <filter name="group_status" string="Sync Status" context="{'group_by': 'sync_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Tree/List view ─────────────────────────────────────────────── -->
+    <record id="view_mc_channel_tree" model="ir.ui.view">
+        <field name="name">mc.channel.tree</field>
+        <field name="model">mc.channel</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Channels"
+                decoration-danger="sync_status == 'error'"
+                decoration-success="sync_status == 'success'">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="sync_status" widget="badge"
+                    decoration-success="sync_status == 'success'"
+                    decoration-warning="sync_status == 'syncing'"
+                    decoration-danger="sync_status == 'error'"
+                    decoration-info="sync_status == 'idle'"/>
+                <field name="last_sync_at"/>
+                <field name="mapping_count" string="Mappings"/>
+                <field name="active" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form view ──────────────────────────────────────────────────── -->
+    <record id="view_mc_channel_form" model="ir.ui.view">
+        <field name="name">mc.channel.form</field>
+        <field name="model">mc.channel</field>
+        <field name="arch" type="xml">
+            <form string="Sales Channel">
+                <header>
+                    <button name="action_run_pipeline"
+                        string="Run Pipeline"
+                        type="object"
+                        class="btn-primary"
+                        groups="multichannel_sync.group_mc_manager"
+                        confirm="This will parse and process all new raw orders for this channel. Continue?"/>
+                </header>
+                <sheet>
+                    <!-- Stat button: opens product mappings filtered to this channel -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_mappings"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-link">
+                            <field name="mapping_count" widget="statinfo" string="Mappings"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Channel name..."/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Configuration">
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="color" widget="color_picker"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Sync Status">
+                            <field name="sync_status" widget="badge"
+                                decoration-success="sync_status == 'success'"
+                                decoration-warning="sync_status == 'syncing'"
+                                decoration-danger="sync_status == 'error'"
+                                decoration-info="sync_status == 'idle'"/>
+                            <field name="last_sync_at"/>
+                        </group>
+                    </group>
+
+                    <group string="Description">
+                        <field name="description" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Window action ──────────────────────────────────────────────── -->
+    <record id="action_mc_channel" model="ir.actions.act_window">
+        <field name="name">Sales Channels</field>
+        <field name="res_model">mc.channel</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_mc_channel_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No channels configured yet.
+            </p>
+            <p>
+                Create a channel for each sales platform (Shopee, TikTok Shop)
+                to start ingesting and processing orders.
+            </p>
+        </field>
+    </record>
+
+</odoo>

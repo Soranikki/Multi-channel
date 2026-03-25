@@ -1,0 +1,19 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mc_channel_user,mc.channel user,model_mc_channel,multichannel_sync.group_mc_user,1,0,0,0
+access_mc_channel_manager,mc.channel manager,model_mc_channel,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_product_user,mc.product user,model_mc_product,multichannel_sync.group_mc_user,1,1,1,0
+access_mc_product_manager,mc.product manager,model_mc_product,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_product_mapping_user,mc.product.mapping user,model_mc_product_mapping,multichannel_sync.group_mc_user,1,1,1,1
+access_mc_product_mapping_manager,mc.product.mapping manager,model_mc_product_mapping,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_sync_log_user,mc.sync.log user,model_mc_sync_log,multichannel_sync.group_mc_user,1,0,0,0
+access_mc_sync_log_manager,mc.sync.log manager,model_mc_sync_log,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_raw_order_user,mc.raw.order user,model_mc_raw_order,multichannel_sync.group_mc_user,1,1,1,0
+access_mc_raw_order_manager,mc.raw.order manager,model_mc_raw_order,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_order_user,mc.order user,model_mc_order,multichannel_sync.group_mc_user,1,1,0,0
+access_mc_order_manager,mc.order manager,model_mc_order,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_order_line_user,mc.order.line user,model_mc_order_line,multichannel_sync.group_mc_user,1,1,0,0
+access_mc_order_line_manager,mc.order.line manager,model_mc_order_line,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_stock_move_user,mc.stock.move user,model_mc_stock_move,multichannel_sync.group_mc_user,1,0,0,0
+access_mc_stock_move_manager,mc.stock.move manager,model_mc_stock_move,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_stock_adj_wizard_user,mc.stock.adjustment.wizard user,model_mc_stock_adjustment_wizard,multichannel_sync.group_mc_user,1,1,1,1
+access_mc_stock_adj_wizard_manager,mc.stock.adjustment.wizard manager,model_mc_stock_adjustment_wizard,multichannel_sync.group_mc_manager,1,1,1,1

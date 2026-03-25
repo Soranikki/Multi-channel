@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Search view ─────────────────────────────────────────────────── -->
+    <record id="view_mc_order_search" model="ir.ui.view">
+        <field name="name">mc.order.search</field>
+        <field name="model">mc.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Orders">
+                <field name="name"/>
+                <field name="external_order_id"/>
+                <field name="customer_name"/>
+                <field name="channel_id"/>
+                <filter name="draft"     string="Draft"     domain="[('state','=','draft')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                <filter name="done"      string="Done"      domain="[('state','=','done')]"/>
+                <filter name="cancelled" string="Cancelled" domain="[('state','=','cancelled')]"/>
+                <separator/>
+                <filter name="today" string="Today"
+                    domain="[('order_date','&gt;=',(context_today()).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter name="group_channel" string="Channel" context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_state"   string="State"   context="{'group_by': 'state'}"/>
+                    <filter name="group_date"    string="Month"   context="{'group_by': 'order_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Tree/List view ─────────────────────────────────────────────── -->
+    <record id="view_mc_order_tree" model="ir.ui.view">
+        <field name="name">mc.order.tree</field>
+        <field name="model">mc.order</field>
+        <field name="arch" type="xml">
+            <tree string="Orders"
+                decoration-info="state == 'draft'"
+                decoration-success="state == 'done'"
+                decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="order_date"/>
+                <field name="channel_id"/>
+                <field name="external_order_id" optional="show"/>
+                <field name="customer_name"/>
+                <field name="state" widget="badge"
+                    decoration-info="state == 'draft'"
+                    decoration-warning="state == 'confirmed'"
+                    decoration-success="state == 'done'"
+                    decoration-danger="state == 'cancelled'"/>
+                <field name="total_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form view ──────────────────────────────────────────────────── -->
+    <record id="view_mc_order_form" model="ir.ui.view">
+        <field name="name">mc.order.form</field>
+        <field name="model">mc.order</field>
+        <field name="arch" type="xml">
+            <form string="Order">
+                <header>
+                    <button name="action_confirm"
+                        string="Confirm Order"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'draft'"/>
+                    <button name="action_mark_done"
+                        string="Mark as Done"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'confirmed'"/>
+                    <button name="action_cancel"
+                        string="Cancel"
+                        type="object"
+                        invisible="state not in ('draft', 'confirmed')"/>
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="raw_order_id" invisible="1"/>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_raw_order"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-inbox"
+                            invisible="not raw_order_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Raw Order</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" string="Order Reference"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Order Info">
+                            <field name="channel_id"/>
+                            <field name="external_order_id" readonly="1"/>
+                            <field name="order_date"/>
+                        </group>
+                        <group string="Customer">
+                            <field name="customer_name"/>
+                            <field name="customer_phone"/>
+                            <field name="customer_email"/>
+                            <field name="shipping_address"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Order Lines" name="lines">
+                            <field name="line_ids" widget="one2many">
+                                <tree editable="bottom">
+                                    <field name="external_sku" readonly="1"/>
+                                    <field name="product_id"/>
+                                    <field name="internal_sku" readonly="1"/>
+                                    <field name="product_name"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="discount"/>
+                                    <field name="subtotal" readonly="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="total_amount" widget="monetary"
+                                    options="{'currency_field': 'currency_id'}"
+                                    readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Window action ──────────────────────────────────────────────── -->
+    <record id="action_mc_order" model="ir.actions.act_window">
+        <field name="name">Orders</field>
+        <field name="res_model">mc.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_mc_order_search"/>
+        <field name="context">{'search_default_group_channel': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No orders yet.</p>
+            <p>
+                Orders are created automatically when the pipeline processes
+                raw orders from Shopee, TikTok Shop, or other channels.
+            </p>
+        </field>
+    </record>
+
+    <!-- Server action: Process All Parsed — in list Action menu -->
+    <record id="action_mc_raw_order_process_all" model="ir.actions.server">
+        <field name="name">Process All Parsed Raw Orders</field>
+        <field name="model_id" ref="model_mc_raw_order"/>
+        <field name="binding_model_id" ref="model_mc_raw_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+records.action_process_all_parsed()
+        </field>
+    </record>
+
+</odoo>

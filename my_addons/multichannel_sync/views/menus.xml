@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         Root app menu — "Multichannel Sales"
+    ══════════════════════════════════════════════════════════════════════ -->
+    <menuitem
+        id="menu_mc_root"
+        name="Multichannel Sales"
+        sequence="40"
+        web_icon="multichannel_sync,static/description/icon.png"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <!-- ── Product Catalog ────────────────────────────────────────────── -->
+    <menuitem
+        id="menu_mc_catalog"
+        name="Product Catalog"
+        parent="menu_mc_root"
+        sequence="20"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_products"
+        name="Products"
+        parent="menu_mc_catalog"
+        action="action_mc_product"
+        sequence="10"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_product_mappings"
+        name="Channel Mappings"
+        parent="menu_mc_catalog"
+        action="action_mc_product_mapping"
+        sequence="20"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <!-- ── Orders ─────────────────────────────────────────────────────── -->
+    <menuitem
+        id="menu_mc_orders"
+        name="Orders"
+        parent="menu_mc_root"
+        sequence="30"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_orders_list"
+        name="All Orders"
+        parent="menu_mc_orders"
+        action="action_mc_order"
+        sequence="10"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_raw_orders"
+        name="Raw Orders"
+        parent="menu_mc_orders"
+        action="action_mc_raw_order"
+        sequence="20"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_raw_order_errors"
+        name="Raw Order Errors"
+        parent="menu_mc_orders"
+        action="action_mc_raw_order_errors"
+        sequence="30"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <!-- ── Inventory ──────────────────────────────────────────────────── -->
+    <menuitem
+        id="menu_mc_inventory"
+        name="Inventory"
+        parent="menu_mc_root"
+        sequence="40"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_stock_moves"
+        name="Stock Movements"
+        parent="menu_mc_inventory"
+        action="action_mc_stock_move"
+        sequence="10"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_inventory_monitor"
+        name="Inventory Monitor"
+        parent="menu_mc_inventory"
+        action="action_mc_inventory_monitor"
+        sequence="20"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <!-- ── Logs ───────────────────────────────────────────────────────── -->
+    <menuitem
+        id="menu_mc_logs"
+        name="Logs"
+        parent="menu_mc_root"
+        sequence="80"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_sync_log"
+        name="All Sync Logs"
+        parent="menu_mc_logs"
+        action="action_mc_sync_log"
+        sequence="10"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_error_log"
+        name="Error Log"
+        parent="menu_mc_logs"
+        action="action_mc_sync_log_errors"
+        sequence="20"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <!-- ── Configuration (managers only) ──────────────────────────────── -->
+    <menuitem
+        id="menu_mc_configuration"
+        name="Configuration"
+        parent="menu_mc_root"
+        sequence="90"
+        groups="multichannel_sync.group_mc_manager"/>
+
+    <menuitem
+        id="menu_mc_channels"
+        name="Sales Channels"
+        parent="menu_mc_configuration"
+        action="action_mc_channel"
+        sequence="10"
+        groups="multichannel_sync.group_mc_manager"/>
+
+</odoo>

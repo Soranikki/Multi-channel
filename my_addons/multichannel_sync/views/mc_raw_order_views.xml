@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Search view ─────────────────────────────────────────────────── -->
+    <record id="view_mc_raw_order_search" model="ir.ui.view">
+        <field name="name">mc.raw.order.search</field>
+        <field name="model">mc.raw.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Raw Orders">
+                <field name="external_order_id"/>
+                <field name="parsed_customer_name"/>
+                <field name="channel_id"/>
+                <filter name="state_new"       string="New"       domain="[('state','=','new')]"/>
+                <filter name="state_parsed"    string="Parsed"    domain="[('state','=','parsed')]"/>
+                <filter name="state_processed" string="Processed" domain="[('state','=','processed')]"/>
+                <filter name="state_error"     string="Error"     domain="[('state','=','error')]"/>
+                <separator/>
+                <filter name="today" string="Today"
+                    domain="[('received_at','&gt;=',(context_today()).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter name="group_channel" string="Channel"    context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_state"   string="State"      context="{'group_by': 'state'}"/>
+                    <filter name="group_date"    string="Received"   context="{'group_by': 'received_at:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Tree/List view ─────────────────────────────────────────────── -->
+    <record id="view_mc_raw_order_tree" model="ir.ui.view">
+        <field name="name">mc.raw.order.tree</field>
+        <field name="model">mc.raw.order</field>
+        <field name="arch" type="xml">
+            <tree string="Raw Orders"
+                decoration-danger="state == 'error'"
+                decoration-success="state == 'processed'"
+                decoration-info="state == 'parsed'"
+                decoration-muted="state == 'new'">
+                <field name="received_at"/>
+                <field name="channel_id"/>
+                <field name="external_order_id"/>
+                <field name="state" widget="badge"
+                    decoration-danger="state == 'error'"
+                    decoration-success="state == 'processed'"
+                    decoration-info="state == 'parsed'"/>
+                <field name="parsed_customer_name" string="Customer"/>
+                <field name="parsed_total_amount" string="Amount"/>
+                <field name="parsed_currency" string="Currency"/>
+                <field name="parsed_at" optional="show"/>
+                <field name="processed_at" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form view ──────────────────────────────────────────────────── -->
+    <record id="view_mc_raw_order_form" model="ir.ui.view">
+        <field name="name">mc.raw.order.form</field>
+        <field name="model">mc.raw.order</field>
+        <field name="arch" type="xml">
+            <form string="Raw Order">
+                <header>
+                    <button name="action_parse"
+                        string="Parse"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state not in ('new', 'error')"/>
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="new,parsed,processed,error"/>
+                </header>
+                <sheet>
+                    <!-- order_id must be in view for invisible modifier to work -->
+                    <field name="order_id" invisible="1"/>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_order"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-file-text-o"
+                            invisible="not order_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Resulting Order</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="external_order_id" string="External Order ID"/>
+                        <h1>
+                            <field name="external_order_id"
+                                placeholder="(populated after parsing)"
+                                readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Source">
+                            <field name="channel_id"/>
+                            <field name="received_at" readonly="1"/>
+                            <field name="parsed_at" readonly="1"/>
+                            <field name="processed_at" readonly="1"/>
+                        </group>
+                        <group string="Parsed Customer Info" invisible="state == 'new'">
+                            <field name="parsed_customer_name" readonly="1"/>
+                            <field name="parsed_customer_phone" readonly="1"/>
+                            <field name="parsed_shipping_address" readonly="1"/>
+                            <field name="parsed_order_date" readonly="1"/>
+                            <field name="parsed_total_amount" readonly="1"/>
+                            <field name="parsed_currency" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Error display -->
+                    <group invisible="state != 'error'">
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Parse / Processing Error:</strong><br/>
+                            <field name="error_message" readonly="1" nolabel="1"/>
+                        </div>
+                    </group>
+
+                    <notebook>
+                        <page string="Raw Payload" name="raw_payload">
+                            <field name="raw_payload"
+                                readonly="1"
+                                nolabel="1"/>
+                        </page>
+                        <page string="Parsed Items" name="parsed_items"
+                            invisible="state == 'new'">
+                            <field name="parsed_items_json" readonly="1" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Window actions ─────────────────────────────────────────────── -->
+    <record id="action_mc_raw_order" model="ir.actions.act_window">
+        <field name="name">Raw Orders</field>
+        <field name="res_model">mc.raw.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_mc_raw_order_search"/>
+        <field name="context">{'search_default_group_channel': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No raw orders yet.
+            </p>
+            <p>
+                Raw orders appear here when the simulation wizard generates
+                mock payloads, or when the channel pipeline runs.
+            </p>
+        </field>
+    </record>
+
+    <!-- Pre-filtered to errors only -->
+    <record id="action_mc_raw_order_errors" model="ir.actions.act_window">
+        <field name="name">Raw Order Errors</field>
+        <field name="res_model">mc.raw.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_mc_raw_order_search"/>
+        <field name="domain">[('state', '=', 'error')]</field>
+        <field name="context">{'search_default_group_channel': 1}</field>
+    </record>
+
+    <!-- Server action: Parse All New — accessible from Action menu in list -->
+    <record id="action_mc_raw_order_parse_all" model="ir.actions.server">
+        <field name="name">Parse All New Raw Orders</field>
+        <field name="model_id" ref="model_mc_raw_order"/>
+        <field name="binding_model_id" ref="model_mc_raw_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+records.action_parse_all_new()
+        </field>
+    </record>
+
+</odoo>

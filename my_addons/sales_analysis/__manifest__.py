@@ -1,34 +1,32 @@
-# -*- coding: utf-8 -*-
 {
-    'name': "sales_analysis",
-
-    'summary': "Short (1 phrase/line) summary of the module's purpose",
-
+    'name': 'Sales Analysis',
+    'summary': 'Odoo 17 sales analytics app with live reports and reusable presets',
     'description': """
-Long description of module's purpose
+Sales Analysis
+==============
+
+Provides a focused sales analytics app for Odoo 17 based on the native
+``sale.report`` model, plus reusable report presets for teams.
+
+Features:
+- live graph, pivot, and list reports for sales performance
+- reusable analysis presets with filters and grouping
+- internal summary page and JSON endpoint for each preset
+- dedicated access groups and rules for analysts and managers
+- app icon for quick access from the main menu
     """,
-
-    'author': "My Company",
-    'website': "https://www.yourcompany.com",
-
-    # Categories can be used to filter modules in modules listing
-    # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
-    # for the full list
-    'category': 'Uncategorized',
-    'version': '0.1',
-
-    # any module necessary for this one to work correctly
-    'depends': ['base'],
-
-    # always loaded
+    'author': 'Custom Development',
+    'website': 'https://www.odoo.com',
+    'category': 'Sales/Reporting',
+    'version': '17.0.1.0.0',
+    'license': 'LGPL-3',
+    'depends': ['sale_management'],
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/sales_analysis_security.xml',
+        'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
     ],
-    # only loaded in demonstration mode
-    'demo': [
-        'demo/demo.xml',
-    ],
-}
-
+    'application': True,
+    'installable': True,
+} # type: ignore

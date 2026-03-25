@@ -1,24 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-<!--
-        <template id="listing">
-          <ul>
-            <li t-foreach="objects" t-as="object">
-              <a t-attf-href="#{ root }/objects/#{ object.id }">
-                <t t-esc="object.display_name"/>
-              </a>
-            </li>
-          </ul>
-        </template>
-        <template id="object">
-          <h1><t t-esc="object.display_name"/></h1>
-          <dl>
-            <t t-foreach="object._fields" t-as="field">
-              <dt><t t-esc="field"/></dt>
-              <dd><t t-esc="object[field]"/></dd>
-            </t>
-          </dl>
-        </template>
--->
-    </data>
+    <template id="preset_summary" name="Sales Analysis Preset Summary">
+        <html>
+            <head>
+                <meta charset="utf-8"/>
+                <title><t t-esc="preset.name"/> - Sales Analysis</title>
+                <style type="text/css">
+                    body { font-family: Arial, sans-serif; margin: 0; background: #f4f7fb; color: #16324f; }
+                    .page { max-width: 1080px; margin: 0 auto; padding: 32px 24px 48px; }
+                    .hero { background: linear-gradient(135deg, #16324f, #1d8f7a); color: #fff; padding: 28px 32px; border-radius: 20px; }
+                    .hero h1 { margin: 0 0 10px; font-size: 32px; }
+                    .hero p { margin: 6px 0; opacity: 0.92; }
+                    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+                    .card { background: #fff; border-radius: 18px; padding: 20px; box-shadow: 0 8px 24px rgba(22, 50, 79, 0.08); }
+                    .metric-label { color: #6b7a90; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+                    .metric-value { margin-top: 8px; font-size: 28px; font-weight: 700; }
+                    .section-title { margin: 28px 0 12px; font-size: 20px; }
+                    .list { margin: 0; padding-left: 20px; }
+                    .list li { margin: 8px 0; }
+                    .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+                    .meta-item { background: rgba(255, 255, 255, 0.14); border-radius: 12px; padding: 12px 14px; }
+                    .actions { margin-top: 18px; }
+                    .actions a { color: #16324f; background: #fff; text-decoration: none; padding: 10px 14px; border-radius: 10px; margin-right: 8px; display: inline-block; }
+                    @media (max-width: 768px) {
+                        .grid, .meta { grid-template-columns: 1fr; }
+                        .hero h1 { font-size: 26px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <main class="page">
+                    <section class="hero">
+                        <h1><t t-esc="preset.name"/></h1>
+                        <p>Preset owner: <strong><t t-esc="summary['owner']"/></strong></p>
+                        <p>Company: <strong><t t-esc="summary['company']"/></strong></p>
+                        <div class="meta">
+                            <div class="meta-item">
+                                <div>Period</div>
+                                <strong><t t-esc="summary['date_range']"/></strong>
+                            </div>
+                            <div class="meta-item">
+                                <div>Scope</div>
+                                <strong><t t-esc="summary['state_scope']"/></strong>
+                            </div>
+                            <div class="meta-item">
+                                <div>Default Grouping</div>
+                                <strong><t t-esc="summary['group_by']"/></strong>
+                            </div>
+                            <div class="meta-item">
+                                <div>Invoice Status</div>
+                                <strong><t t-esc="summary['invoice_status'] or 'Any'"/></strong>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <a t-att-href="'/web#id=%s&amp;model=sales.analysis.preset&amp;view_type=form' % preset.id">Open Preset</a>
+                            <a t-att-href="'/web#action=%s&amp;model=sale.report&amp;view_type=graph' % overview_action_id">Open Sales Analysis App</a>
+                        </div>
+                    </section>
+
+                    <section class="grid">
+                        <div class="card">
+                            <div class="metric-label">Orders</div>
+                            <div class="metric-value"><t t-esc="summary['metrics']['order_count']"/></div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-label">Total Revenue</div>
+                            <div class="metric-value">
+                                <t t-esc="summary['metrics']['currency']"/> <t t-esc="summary['metrics']['total_revenue']"/>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-label">Untaxed Total</div>
+                            <div class="metric-value">
+                                <t t-esc="summary['metrics']['currency']"/> <t t-esc="summary['metrics']['untaxed_total']"/>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-label">Qty Ordered</div>
+                            <div class="metric-value"><t t-esc="summary['metrics']['qty_ordered']"/></div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-label">Qty Delivered</div>
+                            <div class="metric-value"><t t-esc="summary['metrics']['qty_delivered']"/></div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-label">Qty To Invoice</div>
+                            <div class="metric-value"><t t-esc="summary['metrics']['qty_to_invoice']"/></div>
+                        </div>
+                    </section>
+
+                    <section class="grid">
+                        <div class="card">
+                            <h2 class="section-title">Top Customers</h2>
+                            <ol class="list">
+                                <t t-foreach="summary['top_customers']" t-as="customer">
+                                    <li>
+                                        <strong><t t-esc="customer['name']"/></strong>
+                                        <span> - <t t-esc="summary['metrics']['currency']"/> <t t-esc="customer['amount']"/></span>
+                                    </li>
+                                </t>
+                                <li t-if="not summary['top_customers']">No customer data matches this preset yet.</li>
+                            </ol>
+                        </div>
+                        <div class="card">
+                            <h2 class="section-title">Top Products</h2>
+                            <ol class="list">
+                                <t t-foreach="summary['top_products']" t-as="product">
+                                    <li>
+                                        <strong><t t-esc="product['name']"/></strong>
+                                        <span> - <t t-esc="summary['metrics']['currency']"/> <t t-esc="product['amount']"/></span>
+                                    </li>
+                                </t>
+                                <li t-if="not summary['top_products']">No product data matches this preset yet.</li>
+                            </ol>
+                        </div>
+                    </section>
+                </main>
+            </body>
+        </html>
+    </template>
 </odoo>

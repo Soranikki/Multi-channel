@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Wizard form view ──────────────────────────────────────────────── -->
+    <record id="view_mc_stock_adjustment_wizard_form" model="ir.ui.view">
+        <field name="name">mc.stock.adjustment.wizard.form</field>
+        <field name="model">mc.stock.adjustment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Adjust Stock">
+                <group>
+                    <group string="Product">
+                        <field name="product_id" readonly="1"/>
+                        <field name="current_stock" readonly="1"/>
+                    </group>
+                    <group string="Adjustment">
+                        <field name="adjustment_type" widget="radio"/>
+                        <field name="quantity"/>
+                        <field name="reason" placeholder="e.g. Physical count correction"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_apply"
+                        type="object"
+                        string="Apply Adjustment"
+                        class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Wizard action (opened from product form button) ──────────────── -->
+    <record id="action_mc_stock_adjustment_wizard" model="ir.actions.act_window">
+        <field name="name">Adjust Stock</field>
+        <field name="res_model">mc.stock.adjustment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

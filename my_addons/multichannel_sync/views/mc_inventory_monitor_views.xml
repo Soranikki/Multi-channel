@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Inventory monitoring list view ───────────────────────────────── -->
+    <!-- Sorted by available_qty ascending so most critical items are first. -->
+    <!-- Row color: red when is_low_stock, muted when inactive.             -->
+    <record id="view_mc_inventory_monitor_tree" model="ir.ui.view">
+        <field name="name">mc.product.inventory.monitor.tree</field>
+        <field name="model">mc.product</field>
+        <field name="arch" type="xml">
+            <tree string="Inventory Monitor"
+                decoration-danger="is_low_stock == True"
+                decoration-muted="active == False"
+                default_order="available_qty asc">
+                <field name="internal_sku"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="stock_qty" string="On Hand"/>
+                <field name="reserved_qty" string="Reserved"/>
+                <field name="available_qty" string="Available"/>
+                <field name="low_stock_threshold" string="Alert Threshold"/>
+                <field name="is_low_stock" widget="boolean" string="Low Stock"/>
+                <field name="active" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Window action — opens the monitoring view ────────────────────── -->
+    <!-- Pre-applies the low_stock filter via search_default_low_stock.     -->
+    <!-- Reuses the existing product search view for consistent filtering.  -->
+    <record id="action_mc_inventory_monitor" model="ir.actions.act_window">
+        <field name="name">Inventory Monitor</field>
+        <field name="res_model">mc.product</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_mc_inventory_monitor_tree"/>
+        <field name="search_view_id" ref="view_mc_product_search"/>
+        <field name="context">{'search_default_low_stock': 1, 'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                All products are well stocked!
+            </p>
+            <p>
+                Products with available quantity at or below the alert threshold
+                appear here in red. Use the search bar to clear the Low Stock filter
+                and view all products.
+            </p>
+        </field>
+    </record>
+
+</odoo>

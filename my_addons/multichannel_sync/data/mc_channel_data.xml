@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Pre-loaded channel definitions.
+            noupdate=1 means these are only created on first install,
+            allowing admins to edit them without losing changes on module update.
+        -->
+
+        <record id="channel_shopee" model="mc.channel">
+            <field name="name">Shopee</field>
+            <field name="code">shopee</field>
+            <field name="description">Shopee Vietnam marketplace channel. Payload format: shopee_v2 JSON.</field>
+            <field name="sequence">10</field>
+            <field name="color">1</field>
+        </record>
+
+        <record id="channel_tiktok" model="mc.channel">
+            <field name="name">TikTok Shop</field>
+            <field name="code">tiktok</field>
+            <field name="description">TikTok Shop Vietnam channel. Payload format: tiktok_open_api JSON.</field>
+            <field name="sequence">20</field>
+            <field name="color">4</field>
+        </record>
+
+    </data>
+</odoo>

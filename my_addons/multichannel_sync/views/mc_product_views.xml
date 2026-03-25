@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Search view ─────────────────────────────────────────────────── -->
+    <record id="view_mc_product_search" model="ir.ui.view">
+        <field name="name">mc.product.search</field>
+        <field name="model">mc.product</field>
+        <field name="arch" type="xml">
+            <search string="Search Products">
+                <field name="name"/>
+                <field name="internal_sku"/>
+                <field name="category"/>
+                <filter name="low_stock" string="Low Stock" domain="[('is_low_stock','=',True)]"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Category" context="{'group_by': 'category'}"/>
+                    <filter name="group_low_stock" string="Stock Alert" context="{'group_by': 'is_low_stock'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Tree/List view ─────────────────────────────────────────────── -->
+    <record id="view_mc_product_tree" model="ir.ui.view">
+        <field name="name">mc.product.tree</field>
+        <field name="model">mc.product</field>
+        <field name="arch" type="xml">
+            <tree string="Products"
+                decoration-danger="is_low_stock == True"
+                decoration-muted="active == False">
+                <field name="internal_sku"/>
+                <field name="name"/>
+                <field name="category"/>
+                <field name="sale_price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="stock_qty"/>
+                <field name="reserved_qty"/>
+                <field name="available_qty"/>
+                <field name="low_stock_threshold"/>
+                <field name="is_low_stock" widget="boolean" optional="hide"/>
+                <field name="mapping_count" string="Mappings"/>
+                <field name="active" column_invisible="True"/>
+                <field name="currency_id" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Kanban view ─────────────────────────────────────────────────── -->
+    <record id="view_mc_product_kanban" model="ir.ui.view">
+        <field name="name">mc.product.kanban</field>
+        <field name="model">mc.product</field>
+        <field name="arch" type="xml">
+            <kanban sample="1">
+                <field name="name"/>
+                <field name="internal_sku"/>
+                <field name="sale_price"/>
+                <field name="available_qty"/>
+                <field name="is_low_stock"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold fs-5"/>
+                        <div class="text-muted">SKU: <field name="internal_sku"/></div>
+                        <hr class="mt-1 mb-1"/>
+                        <div class="d-flex justify-content-between">
+                            <span>Price: <field name="sale_price"/></span>
+                            <span t-att-class="record.is_low_stock.raw_value ? 'badge bg-danger' : 'badge bg-success'">
+                                Avail: <field name="available_qty"/>
+                            </span>
+                        </div>
+                        <footer>
+                            <span t-if="record.is_low_stock.raw_value" class="text-danger fw-bold">
+                                Low Stock
+                            </span>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ── Form view ──────────────────────────────────────────────────── -->
+    <record id="view_mc_product_form" model="ir.ui.view">
+        <field name="name">mc.product.form</field>
+        <field name="model">mc.product</field>
+        <field name="arch" type="xml">
+            <form string="Internal Product">
+                <sheet>
+                    <!-- Stat buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_mappings"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-link">
+                            <field name="mapping_count" widget="statinfo" string="Mappings"/>
+                        </button>
+                        <button name="action_open_stock_moves"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-exchange">
+                            <field name="stock_move_count" widget="statinfo" string="Stock Moves"/>
+                        </button>
+                        <button name="action_open_pending_orders"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-shopping-cart">
+                            <field name="pending_order_count" widget="statinfo" string="Pending Orders"/>
+                        </button>
+                    </div>
+
+                    <field name="image" widget="image" class="oe_avatar"/>
+                    <field name="currency_id" invisible="1"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Product name..."/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Identification">
+                            <field name="internal_sku"/>
+                            <field name="category"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Pricing">
+                            <field name="sale_price"/>
+                            <field name="cost_price"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Inventory" name="inventory">
+                            <group>
+                                <group string="Stock Levels">
+                                    <field name="stock_qty"/>
+                                    <field name="reserved_qty" readonly="1"/>
+                                    <field name="available_qty" readonly="1"/>
+                                </group>
+                                <group string="Alerts">
+                                    <field name="low_stock_threshold"/>
+                                    <field name="is_low_stock" readonly="1" widget="boolean"/>
+                                </group>
+                            </group>
+                            <div class="mt-2">
+                                <button name="action_adjust_stock"
+                                    type="object"
+                                    string="Adjust Stock"
+                                    class="btn-secondary"
+                                    icon="fa-sliders"/>
+                            </div>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Window action ──────────────────────────────────────────────── -->
+    <record id="action_mc_product" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="res_model">mc.product</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="search_view_id" ref="view_mc_product_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No products yet.
+            </p>
+            <p>
+                Create your internal product catalog here.
+                Then map external platform SKUs to each product.
+            </p>
+        </field>
+    </record>
+
+</odoo>
