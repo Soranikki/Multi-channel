@@ -80,17 +80,17 @@ class McStockAdjustmentWizard(models.TransientModel):
                     f'only {product.stock_qty} in stock (would go negative).'
                 )
             product.write({'stock_qty': new_stock})
-            move_type = 'adjustment'
+            move_type = 'adjustment_out'
             note = f'Manual removal — {self.reason}'
         else:
             product.write({'stock_qty': product.stock_qty + self.quantity})
-            move_type = 'adjustment'
+            move_type = 'adjustment_in'
             note = f'Manual addition — {self.reason}'
 
         self.env['mc.stock.move'].create({
             'product_id': product.id,
             'move_type':  move_type,
-            'quantity':   self.quantity if self.adjustment_type == 'add' else -self.quantity,
+            'quantity':   self.quantity,
             'reference':  f'ADJ/{product.internal_sku}',
             'note':       note,
         })

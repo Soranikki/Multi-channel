@@ -17,3 +17,5 @@ access_mc_stock_move_user,mc.stock.move user,model_mc_stock_move,multichannel_sy
 access_mc_stock_move_manager,mc.stock.move manager,model_mc_stock_move,multichannel_sync.group_mc_manager,1,1,1,1
 access_mc_stock_adj_wizard_user,mc.stock.adjustment.wizard user,model_mc_stock_adjustment_wizard,multichannel_sync.group_mc_user,1,1,1,1
 access_mc_stock_adj_wizard_manager,mc.stock.adjustment.wizard manager,model_mc_stock_adjustment_wizard,multichannel_sync.group_mc_manager,1,1,1,1
+access_mc_analysis_report_user,mc.analysis.report user,model_mc_analysis_report,multichannel_sync.group_mc_user,1,0,0,0
+access_mc_analysis_report_manager,mc.analysis.report manager,model_mc_analysis_report,multichannel_sync.group_mc_manager,1,0,0,0

@@ -59,7 +59,7 @@
                         confirm="This will parse and process all new raw orders for this channel. Continue?"/>
                 </header>
                 <sheet>
-                    <!-- Stat button: opens product mappings filtered to this channel -->
+                    <!-- Stat buttons: mappings + order counts using Python action methods -->
                     <div class="oe_button_box" name="button_box">
                         <button name="action_open_mappings"
                             type="object"
@@ -67,6 +67,12 @@
                             icon="fa-link">
                             <field name="mapping_count" widget="statinfo" string="Mappings"/>
                         </button>
+                        <div class="oe_stat_button o_not_clickable" icon="fa-inbox">
+                            <field name="raw_order_count" widget="statinfo" string="Raw Orders"/>
+                        </div>
+                        <div class="oe_stat_button o_not_clickable" icon="fa-list-alt">
+                            <field name="order_count" widget="statinfo" string="Orders"/>
+                        </div>
                     </div>
 
                     <div class="oe_title">
@@ -88,6 +94,7 @@
                                 decoration-danger="sync_status == 'error'"
                                 decoration-info="sync_status == 'idle'"/>
                             <field name="last_sync_at"/>
+                            <field name="last_sync_duration" string="Last Run Duration (s)"/>
                         </group>
                     </group>
 

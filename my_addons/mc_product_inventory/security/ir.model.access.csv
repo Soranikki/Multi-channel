@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mc_product_mapping_user,mc.product.mapping user,model_mc_product_mapping,mc_core.group_mc_user,1,1,1,1
+access_mc_product_mapping_manager,mc.product.mapping manager,model_mc_product_mapping,mc_core.group_mc_manager,1,1,1,1

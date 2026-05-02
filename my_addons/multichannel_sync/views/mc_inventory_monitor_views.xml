@@ -25,13 +25,26 @@
         </field>
     </record>
 
+    <!-- ── Bar chart: Available Stock per Product ────────────────────────── -->
+    <!-- Displays available_qty per product — red bars indicate low stock.  -->
+    <record id="view_mc_inventory_monitor_graph" model="ir.ui.view">
+        <field name="name">mc.product.inventory.monitor.graph</field>
+        <field name="model">mc.product</field>
+        <field name="arch" type="xml">
+            <graph string="Stock Level by Product" type="bar">
+                <field name="name" type="row"/>
+                <field name="available_qty" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
     <!-- ── Window action — opens the monitoring view ────────────────────── -->
     <!-- Pre-applies the low_stock filter via search_default_low_stock.     -->
     <!-- Reuses the existing product search view for consistent filtering.  -->
     <record id="action_mc_inventory_monitor" model="ir.actions.act_window">
         <field name="name">Inventory Monitor</field>
         <field name="res_model">mc.product</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,graph,form</field>
         <field name="view_id" ref="view_mc_inventory_monitor_tree"/>
         <field name="search_view_id" ref="view_mc_product_search"/>
         <field name="context">{'search_default_low_stock': 1, 'search_default_active': 1}</field>

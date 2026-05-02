@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mc_channel_user,mc.channel user,model_mc_channel,mc_core.group_mc_user,1,0,0,0
+access_mc_channel_manager,mc.channel manager,model_mc_channel,mc_core.group_mc_manager,1,1,1,1
+access_mc_sync_log_user,mc.sync.log user,model_mc_sync_log,mc_core.group_mc_user,1,0,0,0
+access_mc_sync_log_manager,mc.sync.log manager,model_mc_sync_log,mc_core.group_mc_manager,1,1,1,1

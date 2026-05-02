@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class McStockMove(models.Model):
@@ -26,9 +26,11 @@ class McStockMove(models.Model):
     )
     move_type = fields.Selection(
         selection=[
-            ('in',         'Stock In'),
-            ('out',        'Stock Out'),
-            ('adjustment', 'Adjustment'),
+            ('in',             'Stock In'),
+            ('out',            'Stock Out'),
+            ('adjustment',     'Adjustment'),
+            ('adjustment_in',  'Adjustment In'),
+            ('adjustment_out', 'Adjustment Out'),
         ],
         string='Move Type',
         required=True,
@@ -64,9 +66,14 @@ class McStockMove(models.Model):
         compute='_compute_signed_quantity',
         store=True,
         digits=(12, 3),
-        help='Positive for in/adjustment-positive, negative for out.',
+        help='Positive for stock-in movements, negative for stock-out movements.',
     )
 
+    @api.depends('move_type', 'quantity')
     def _compute_signed_quantity(self) -> None:
         for move in self:
-            move.signed_quantity = move.quantity if move.move_type in ('in', 'adjustment') else -move.quantity
+            move.signed_quantity = (
+                move.quantity
+                if move.move_type in ('in', 'adjustment', 'adjustment_in')
+                else -move.quantity
+            )

@@ -115,6 +115,14 @@ class McOrder(models.Model):
 
     notes = fields.Text(string='Notes')
 
+    # ── Computed convenience ──────────────────────────────────────────────────
+
+    product_count = fields.Integer(
+        string='Products',
+        compute='_compute_product_count',
+        help='Number of distinct products on this order.',
+    )
+
     # ── SQL constraints (idempotency) ─────────────────────────────────────────
 
     _sql_constraints = [
@@ -133,6 +141,11 @@ class McOrder(models.Model):
     def _compute_total_amount(self) -> None:
         for order in self:
             order.total_amount = sum(order.line_ids.mapped('subtotal'))
+
+    @api.depends('line_ids.product_id')
+    def _compute_product_count(self) -> None:
+        for order in self:
+            order.product_count = len(order.line_ids.mapped('product_id'))
 
     # ═════════════════════════════════════════════════════════════════════════
     # Sequence
@@ -197,6 +210,23 @@ class McOrder(models.Model):
                 order._release_reservation()
                 order.message_post(body='Draft order cancelled. Reservation released.')
             order.write({'state': 'cancelled'})
+
+    def action_reset_to_draft(self):
+        """
+        Reset a cancelled order back to draft.
+        Useful when a cancellation was done in error and the operator needs
+        to re-confirm after reviewing lines.
+        Stock reservation is re-applied for all lines.
+        Only applies to 'cancelled' orders.
+        """
+        for order in self.filtered(lambda o: o.state == 'cancelled'):
+            # Re-apply reservation for all lines
+            for line in order.line_ids:
+                line.product_id.write({
+                    'reserved_qty': line.product_id.reserved_qty + line.quantity,
+                })
+            order.write({'state': 'draft'})
+            order.message_post(body='Order reset to draft. Stock reservation re-applied.')
 
     # ═════════════════════════════════════════════════════════════════════════
     # Stock logic (called by action_confirm / action_cancel)

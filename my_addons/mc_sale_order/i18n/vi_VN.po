@@ -1,0 +1,52 @@
+msgid ""
+msgstr ""
+"Language: vi_VN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mc_sale_order
+msgid "Orders"
+msgstr "Đơn hàng"
+
+#. module: mc_sale_order
+msgid "Sales Orders"
+msgstr "Đơn bán hàng"
+
+#. module: mc_sale_order
+msgid "Raw Orders"
+msgstr "Đơn hàng gốc"
+
+#. module: mc_sale_order
+msgid "External Order ID"
+msgstr "Mã đơn hàng (Sàn)"
+
+#. module: mc_sale_order
+msgid "Raw Data"
+msgstr "Dữ liệu thô (JSON)"
+
+#. module: mc_sale_order
+msgid "Sale Order"
+msgstr "Đơn bán hàng"
+
+#. module: mc_sale_order
+msgid "Draft"
+msgstr "Nháp"
+
+#. module: mc_sale_order
+msgid "Parsed"
+msgstr "Đã phân tích"
+
+#. module: mc_sale_order
+msgid "Error"
+msgstr "Lỗi"
+
+#. module: mc_sale_order
+msgid "Multichannel Info"
+msgstr "Thông tin Đa kênh"
+
+#. module: mc_sale_order
+msgid "Channel"
+msgstr "Kênh bán"
+

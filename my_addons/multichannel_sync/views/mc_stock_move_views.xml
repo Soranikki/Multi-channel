@@ -53,11 +53,23 @@
         </field>
     </record>
 
+    <!-- ── Graph view: signed quantity over time ────────────────────────── -->
+    <record id="view_mc_stock_move_graph" model="ir.ui.view">
+        <field name="name">mc.stock.move.graph</field>
+        <field name="model">mc.stock.move</field>
+        <field name="arch" type="xml">
+            <graph string="Stock Movement History" type="bar">
+                <field name="move_date" type="row" interval="day"/>
+                <field name="signed_quantity" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
     <!-- ── Window action ──────────────────────────────────────────────── -->
     <record id="action_mc_stock_move" model="ir.actions.act_window">
         <field name="name">Stock Moves</field>
         <field name="res_model">mc.stock.move</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">tree,graph</field>
         <field name="search_view_id" ref="view_mc_stock_move_search"/>
         <field name="context">{'search_default_group_product': 1}</field>
         <field name="help" type="html">

@@ -65,6 +65,12 @@
                         type="object"
                         class="btn-primary"
                         invisible="state not in ('new', 'error')"/>
+                    <button name="action_reprocess"
+                        string="Reprocess"
+                        type="object"
+                        class="btn-warning"
+                        invisible="state != 'error'"
+                        confirm="This will reset the error record to 'new' so it can be re-parsed. Continue?"/>
                     <field name="state" widget="statusbar"
                         statusbar_visible="new,parsed,processed,error"/>
                 </header>
@@ -175,6 +181,18 @@
         <field name="state">code</field>
         <field name="code">
 records.action_parse_all_new()
+        </field>
+    </record>
+
+    <!-- Server action: Reprocess Errors — accessible from Action menu in list -->
+    <record id="action_mc_raw_order_reprocess" model="ir.actions.server">
+        <field name="name">Reprocess Selected Errors</field>
+        <field name="model_id" ref="model_mc_raw_order"/>
+        <field name="binding_model_id" ref="model_mc_raw_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+records.action_reprocess()
         </field>
     </record>
 

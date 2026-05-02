@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Analytics views for mc.analysis.report (SQL view model).
+         All views are read-only — no create/edit buttons.
+         Data comes from processed mc.order + mc.order.line records.
+    ══════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Search view ──────────────────────────────────────────────────── -->
+    <record id="view_mc_analysis_report_search" model="ir.ui.view">
+        <field name="name">mc.analysis.report.search</field>
+        <field name="model">mc.analysis.report</field>
+        <field name="arch" type="xml">
+            <search string="Analytics">
+                <field name="channel_id"/>
+                <field name="product_id"/>
+                <field name="internal_sku"/>
+                <field name="category"/>
+                <field name="order_name"/>
+                <!-- State filters -->
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+                <filter name="done"      string="Done"      domain="[('state','=','done')]"/>
+                <filter name="draft"     string="Draft"     domain="[('state','=','draft')]"/>
+                <separator/>
+                <!-- Date filters -->
+                <filter name="this_month" string="This Month"
+                    domain="[('order_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="this_year" string="This Year"
+                    domain="[('order_date','&gt;=',(context_today().replace(month=1,day=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_channel"  string="Channel"   context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_product"  string="Product"   context="{'group_by': 'product_id'}"/>
+                    <filter name="group_category" string="Category"  context="{'group_by': 'category'}"/>
+                    <filter name="group_state"    string="State"     context="{'group_by': 'state'}"/>
+                    <filter name="group_month"    string="Month"     context="{'group_by': 'order_date:month'}"/>
+                    <filter name="group_week"     string="Week"      context="{'group_by': 'order_date:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── List view (read-only tabular data) ───────────────────────────── -->
+    <record id="view_mc_analysis_report_tree" model="ir.ui.view">
+        <field name="name">mc.analysis.report.tree</field>
+        <field name="model">mc.analysis.report</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Analysis" create="false" edit="false" delete="false">
+                <field name="order_date"/>
+                <field name="channel_id"/>
+                <field name="order_name"/>
+                <field name="product_id"/>
+                <field name="internal_sku"/>
+                <field name="category"/>
+                <field name="state" widget="badge"
+                    decoration-warning="state == 'confirmed'"
+                    decoration-success="state == 'done'"
+                    decoration-info="state == 'draft'"/>
+                <field name="quantity"/>
+                <field name="unit_price"/>
+                <field name="revenue" sum="Total Revenue"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Bar chart: Revenue by Channel ────────────────────────────────── -->
+    <!-- Primary dashboard chart. Default view when Analytics menu opens.  -->
+    <record id="view_mc_analysis_revenue_by_channel" model="ir.ui.view">
+        <field name="name">mc.analysis.report.graph.channel</field>
+        <field name="model">mc.analysis.report</field>
+        <field name="arch" type="xml">
+            <graph string="Revenue by Channel" type="bar" stacked="False">
+                <field name="channel_id" type="row"/>
+                <field name="revenue" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ── Line chart: Order Volume by Month ────────────────────────────── -->
+    <record id="view_mc_analysis_volume_by_month" model="ir.ui.view">
+        <field name="name">mc.analysis.report.graph.month</field>
+        <field name="model">mc.analysis.report</field>
+        <field name="arch" type="xml">
+            <graph string="Revenue by Month" type="line">
+                <field name="order_date" type="row" interval="month"/>
+                <field name="revenue" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ── Pivot: Product × Channel Revenue ─────────────────────────────── -->
+    <record id="view_mc_analysis_pivot" model="ir.ui.view">
+        <field name="name">mc.analysis.report.pivot</field>
+        <field name="model">mc.analysis.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Revenue Breakdown" disable_linking="False">
+                <field name="channel_id" type="col"/>
+                <field name="product_id" type="row"/>
+                <field name="revenue" type="measure"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ── Window action: Revenue by Channel (default analytics view) ───── -->
+    <record id="action_mc_analysis_revenue_by_channel" model="ir.actions.act_window">
+        <field name="name">Revenue by Channel</field>
+        <field name="res_model">mc.analysis.report</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_mc_analysis_revenue_by_channel"/>
+        <field name="search_view_id" ref="view_mc_analysis_report_search"/>
+        <field name="context">{'search_default_done': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No analytics data yet.</p>
+            <p>
+                Confirm and complete orders through the pipeline to start
+                seeing revenue data here.
+            </p>
+        </field>
+    </record>
+
+    <!-- ── Window action: Revenue by Month ──────────────────────────────── -->
+    <record id="action_mc_analysis_volume_by_month" model="ir.actions.act_window">
+        <field name="name">Revenue by Month</field>
+        <field name="res_model">mc.analysis.report</field>
+        <field name="view_mode">graph,pivot,tree</field>
+        <field name="view_id" ref="view_mc_analysis_volume_by_month"/>
+        <field name="search_view_id" ref="view_mc_analysis_report_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No analytics data yet.</p>
+        </field>
+    </record>
+
+    <!-- ── Window action: Product Pivot ─────────────────────────────────── -->
+    <record id="action_mc_analysis_pivot" model="ir.actions.act_window">
+        <field name="name">Product Revenue Breakdown</field>
+        <field name="res_model">mc.analysis.report</field>
+        <field name="view_mode">pivot,graph,tree</field>
+        <field name="view_id" ref="view_mc_analysis_pivot"/>
+        <field name="search_view_id" ref="view_mc_analysis_report_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No data yet.</p>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Data Freshness view — shows channels with last_sync_at and staleness.
+         Uses mc.channel model directly (no separate model needed).
+    ══════════════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_mc_data_freshness_tree" model="ir.ui.view">
+        <field name="name">mc.channel.freshness.tree</field>
+        <field name="model">mc.channel</field>
+        <field name="arch" type="xml">
+            <tree string="Data Freshness"
+                create="false"
+                delete="false"
+                decoration-danger="sync_status == 'error'"
+                decoration-warning="sync_status == 'idle'"
+                decoration-success="sync_status == 'success'">
+                <field name="name" string="Channel"/>
+                <field name="code"/>
+                <field name="sync_status" widget="badge"
+                    decoration-success="sync_status == 'success'"
+                    decoration-warning="sync_status in ('idle', 'syncing')"
+                    decoration-danger="sync_status == 'error'"/>
+                <field name="last_sync_at" string="Last Synced"/>
+                <field name="last_sync_duration" string="Duration (s)" optional="show"/>
+                <field name="order_count" string="Orders"/>
+                <field name="raw_order_count" string="Raw Orders"/>
+                <field name="active" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_mc_data_freshness" model="ir.actions.act_window">
+        <field name="name">Data Freshness</field>
+        <field name="res_model">mc.channel</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_mc_data_freshness_tree"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No channels configured.</p>
+            <p>
+                This view shows when each channel was last synced.
+                Channels in error state (red) need attention.
+            </p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,44 @@
+msgid ""
+msgstr ""
+"Language: vi_VN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mc_product_inventory
+msgid "Inventory"
+msgstr "Kho hàng"
+
+#. module: mc_product_inventory
+msgid "Products"
+msgstr "Sản phẩm"
+
+#. module: mc_product_inventory
+msgid "Product Mappings"
+msgstr "Sản phẩm Liên kết"
+
+#. module: mc_product_inventory
+msgid "External Product ID"
+msgstr "ID Sản phẩm (Sàn)"
+
+#. module: mc_product_inventory
+msgid "External Variant ID"
+msgstr "ID Phân loại (Sàn)"
+
+#. module: mc_product_inventory
+msgid "Product"
+msgstr "Sản phẩm (Odoo)"
+
+#. module: mc_product_inventory
+msgid "Multichannel Mappings"
+msgstr "Liên kết Đa kênh"
+
+#. module: mc_product_inventory
+msgid "Channel"
+msgstr "Kênh bán"
+
+#. module: mc_product_inventory
+msgid "Platform"
+msgstr "Nền tảng"
+

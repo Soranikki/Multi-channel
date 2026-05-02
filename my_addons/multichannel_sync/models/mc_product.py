@@ -6,7 +6,6 @@ import urllib.error
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools import config
 
 _logger = logging.getLogger(__name__)
 
@@ -16,6 +15,11 @@ class McProduct(models.Model):
     Internal product master — the Single Source of Truth for all product data.
     External channel SKUs are mapped to these records via mc.product.mapping.
     Stock fields are managed here; movements are logged in mc.stock.move.
+
+    Optional link to Odoo's native product.template allows reusing the standard
+    product catalog (images, UoM, internal categories) without forcing a hard
+    dependency. The link is set manually when the operator wants to tie an
+    mc.product to an existing Odoo product.
     """
     _name = 'mc.product'
     _description = 'Internal Product'
@@ -29,6 +33,11 @@ class McProduct(models.Model):
         string='Internal SKU',
         required=True,
         copy=False,
+    )
+    barcode = fields.Char(
+        string='Barcode / EAN',
+        copy=False,
+        help='Optional barcode for quick lookup and integration with POS or WMS systems.',
     )
     description = fields.Text(
         string='Description',
@@ -52,6 +61,37 @@ class McProduct(models.Model):
     image = fields.Binary(
         string='Product Image',
         attachment=True,
+    )
+
+    # ── Optional link to Odoo native product ─────────────────────────────────
+    # Allows operators to tie an mc.product to an existing product.template
+    # in the standard Odoo catalog, without making it mandatory.
+    # When linked, the Odoo product's image, UoM, and category are accessible
+    # from the mc.product form via related/computed display, but mc.product
+    # remains the authoritative record for stock and pricing in this system.
+
+    odoo_product_tmpl_id = fields.Many2one(
+        comodel_name='product.template',
+        string='Linked Odoo Product',
+        ondelete='set null',
+        help=(
+            'Optional: link to an existing Odoo product template. '
+            'This allows referencing the Odoo catalog without coupling '
+            'multichannel inventory logic to the native stock module.'
+        ),
+    )
+    odoo_product_uom_id = fields.Many2one(
+        related='odoo_product_tmpl_id.uom_id',
+        string='Unit of Measure',
+        readonly=True,
+        store=False,
+    )
+    # Convenience: display Odoo internal reference if linked
+    odoo_product_ref = fields.Char(
+        related='odoo_product_tmpl_id.default_code',
+        string='Odoo Internal Ref',
+        readonly=True,
+        store=False,
     )
 
     # ── Inventory fields (Phase 1 scaffold, logic added in Phase 4) ──────────
@@ -94,6 +134,23 @@ class McProduct(models.Model):
         comodel_name='res.currency',
         string='Currency',
         default=lambda self: self.env.company.currency_id,
+        readonly=True,
+    )
+
+    # ── Outbound stock-sync metadata ──────────────────────────────────────────
+
+    last_push_at = fields.Datetime(
+        string='Last Sync Push At',
+        readonly=True,
+        help='Timestamp of the last successful stock-sync push to the Integration Service.',
+    )
+    last_push_status = fields.Selection(
+        selection=[
+            ('ok',    'OK'),
+            ('error', 'Error'),
+            ('skip',  'Skipped (not configured)'),
+        ],
+        string='Last Sync Push Status',
         readonly=True,
     )
 
@@ -225,8 +282,10 @@ class McProduct(models.Model):
         Service whenever stock_qty or reserved_qty changes on any product.
 
         The push is fire-and-forget (non-blocking): a failure is logged as a
-        warning in mc.sync.log but does NOT roll back the local write.
-        The URL is read from odoo.conf: integration_service_url.
+        warning in mc.sync.log and recorded in last_push_status, but does NOT
+        roll back the local write.
+        The URL is read from ir.config_parameter key:
+            multichannel_sync.integration_service_url
         If the key is empty or absent, the push is silently skipped.
         """
         stock_fields = {'stock_qty', 'reserved_qty'}
@@ -247,13 +306,20 @@ class McProduct(models.Model):
                 "available_qty": 42.0
             }
 
-        Skipped silently if integration_service_url is not configured.
-        Errors are caught, logged to mc.sync.log (type=warning), and do not
-        raise — the local inventory change is already committed.
+        URL source: ir.config_parameter key = 'multichannel_sync.integration_service_url'
+        Skipped silently if not configured (last_push_status = 'skip').
+        Errors are caught, logged to mc.sync.log (type=warning), set last_push_status='error'.
         """
-        base_url = (config.get('integration_service_url') or '').rstrip('/')
+        # Read integration service URL from system parameters (not hardcoded in conf)
+        base_url = (
+            self.env['ir.config_parameter'].sudo()
+            .get_param('multichannel_sync.integration_service_url', default='')
+            .rstrip('/')
+        )
         if not base_url:
-            return  # Not configured — skip silently
+            # Not configured — mark as skipped and return
+            self.sudo().write({'last_push_status': 'skip'})
+            return
 
         endpoint = f'{base_url}/api/mc/stock-update'
         SyncLog = self.env['mc.sync.log']
@@ -278,12 +344,17 @@ class McProduct(models.Model):
                         'Stock sync pushed for SKU %s → available_qty=%s',
                         product.internal_sku, product.available_qty,
                     )
+                    product.sudo().write({
+                        'last_push_at': fields.Datetime.now(),
+                        'last_push_status': 'ok',
+                    })
             except Exception as exc:
                 msg = (
                     f'Stock sync push failed for SKU "{product.internal_sku}": {exc}. '
                     f'Local stock is correct; Integration Service was not updated.'
                 )
                 _logger.warning(msg)
+                product.sudo().write({'last_push_status': 'error'})
                 SyncLog._log(
                     env=self.env,
                     log_type='warning',

@@ -128,4 +128,53 @@ Tasks 4.1 through 4.6 were implemented ahead of schedule as part of the Phase 3 
 
 <!-- Phase 5 will be appended here -->
 
+## Phase 5 — Product Hybrid, Refactor & Analytics
+**Goal:** Improve all existing models (Product, Channel, Order pipeline, Inventory), add optional Odoo product.template link, build Dashboard analytics, and expose outbound API routes for the Integration Service.
+**Status:** ✅ Complete — module installs cleanly (928 queries), SQL view `mc_analysis_report` created, all new API routes active.
+
+### Architectural decisions recorded:
+- `mc.product` keeps its own stock/price fields (SSOT for this system) but gains an **optional Many2one to `product.template`** for Odoo catalog linkage. No `_inherits` — stay in full control.
+- Dashboard analytics live **inside `multichannel_sync`** (no separate module needed). `mc.analysis.report` is a SQL view (_auto=False) joining `mc_order + mc_order_line + mc_product + mc_channel`.
+- Integration Service URL and API key both moved from `odoo.conf` hardcoding to **`ir.config_parameter`** for proper system settings management.
+
+### Module: `my_addons/multichannel_sync/` — files added or changed
+
+| File | Change |
+|---|---|
+| `__manifest__.py` | Updated — added `product` to `depends`. Added `views/mc_analysis_views.xml` to data load list. Version stays `17.0.1.0.0`. |
+| `models/__init__.py` | Updated — imports `mc_analysis_report` at end of chain. |
+| `models/mc_product.py` | **Refactored** — added `barcode` (Char, optional EAN), `odoo_product_tmpl_id` (Many2one → `product.template`, optional link), `odoo_product_uom_id` and `odoo_product_ref` (related readonly from linked template). Added `last_push_at` (Datetime) and `last_push_status` (Selection: ok/error/skip) fields to track outbound stock-sync health. `_push_stock_sync()` rewritten: URL now reads from `ir.config_parameter` key `multichannel_sync.integration_service_url`; failures set `last_push_status='error'`; unconfigured URL sets `'skip'`. Removed `from odoo.tools import config` import. |
+| `models/mc_channel.py` | **Refactored** — added `last_sync_duration` Float field (seconds elapsed in last pipeline run). `action_run_pipeline()` rewritten: sets `sync_status='syncing'` + commits before running (UI feedback), times the run with `time.time()`, returns detailed breakdown notification (parsed ok/err, processed ok/err, duration). Detailed `_logger` on each step. |
+| `models/mc_raw_order.py` | **Refactored** — added `action_reprocess()`: resets error records to `new`, clears all parsed_* fields, posts chatter message. Added total_amount mismatch warning in `_extract_standard_payload()`: logs a WARNING if declared `total_amount` differs from computed item sum by more than 1.0 (accounting for platform-side discounts). Stores declared value unchanged (non-lossy). |
+| `models/mc_order.py` | **Refactored** — added `product_count` Integer (computed, count of distinct `product_id` across lines). Added `_compute_product_count()`. Added `action_reset_to_draft()`: resets `cancelled` → `draft`, re-applies stock reservation per line, posts chatter message. |
+| `models/mc_analysis_report.py` | **New** — `mc.analysis.report` model (`_auto=False`, SQL view). `init()` creates `CREATE OR REPLACE VIEW mc_analysis_report` joining `mc_order_line → mc_order → mc_product → mc_channel`. Excludes cancelled orders. Fields: `order_id`, `order_name`, `channel_id`, `channel_code`, `product_id`, `product_name`, `internal_sku`, `category`, `order_date`, `state`, `quantity`, `unit_price`, `revenue` (= subtotal). |
+| `controllers/controllers.py` | **Refactored + Extended** — API key now read from `ir.config_parameter` key `multichannel_sync.api_key` (fallback: hardcoded dev default). Added `GET /api/mc/stock`: returns available/reserved/on-hand qty per active product; supports `?sku=` and `?skus=` query params for filtering. Added `GET /api/mc/products`: returns full product catalog with active channel mappings per product; supports `?channel=` filter. All endpoints use `sudo()` with justification comment. |
+| `views/mc_product_views.xml` | **Updated** — search view: added `barcode` field. Tree view: added `barcode` column (optional). Form view: added `barcode` field to Identification group. Added "Odoo Product Link" notebook tab with `odoo_product_tmpl_id`, `odoo_product_uom_id`, `odoo_product_ref`. Added "Integration Sync Status" sub-group in Inventory tab showing `last_push_at` + `last_push_status`. |
+| `views/mc_channel_views.xml` | **Updated** — form view Sync Status group: added `last_sync_duration` field. Stat button box: shows `raw_order_count` and `order_count` as non-clickable stat info badges. |
+| `views/mc_raw_order_views.xml` | **Updated** — form header: added "Reprocess" button (visible when `state='error'`). Added server action `action_mc_raw_order_reprocess` bound to list view Action menu. |
+| `views/mc_order_views.xml` | **Updated** — list view: added `product_count` column (optional). Form header: added "Reset to Draft" button (visible when `state='cancelled'`). Order lines grid: locked (`readonly`) when `state != 'draft'` — prevents editing confirmed/done lines. Stat button box: added non-clickable `product_count` stat info badge. |
+| `views/mc_inventory_monitor_views.xml` | **Updated** — added `view_mc_inventory_monitor_graph` bar chart view (product vs available_qty). Window action `action_mc_inventory_monitor` now uses `tree,graph,form` mode. |
+| `views/mc_stock_move_views.xml` | **Updated** — added `view_mc_stock_move_graph` bar chart (signed_quantity by day). Window action now uses `tree,graph` mode. |
+| `views/mc_analysis_views.xml` | **New** — Analytics views for `mc.analysis.report`: search (channel/product/category/state/date filters + group-bys), list (read-only tabular), graph "Revenue by Channel" (bar, default), graph "Revenue by Month" (line), pivot "Product × Channel Revenue". Also contains `view_mc_data_freshness_tree` (read-only channel list showing last_sync_at, sync_status, order counts). Window actions: `action_mc_analysis_revenue_by_channel`, `action_mc_analysis_volume_by_month`, `action_mc_analysis_pivot`, `action_mc_data_freshness`. |
+| `views/menus.xml` | **Updated** — added **Analytics** section (sequence=50) with 4 sub-menus: Revenue by Channel, Revenue by Month, Product Breakdown, Data Freshness. |
+| `security/ir.model.access.csv` | **Updated** — added ACL rows for `mc.analysis.report` (users: read-only, managers: read-only — SQL view, no write). |
+
+### API surface after Phase 5:
+
+| Route | Method | Description |
+|---|---|---|
+| `/api/mc/raw-order` | POST | Receive normalized order from Integration Service |
+| `/api/mc/stock` | GET | Current stock levels (all or filtered by SKU) |
+| `/api/mc/products` | GET | Product catalog + active channel mappings |
+| `/api/mc/stock-update` | POST | **Outbound push target** on Integration Service (called by Odoo when stock changes) |
+
+### ir.config_parameter keys added:
+
+| Key | Purpose |
+|---|---|
+| `multichannel_sync.api_key` | API key for all `/api/mc/*` routes. Default: `mc-integration-secret-2026` |
+| `multichannel_sync.integration_service_url` | Base URL of FastAPI Integration Service for outbound stock push |
+
+---
+
 

@@ -91,6 +91,46 @@
         sequence="20"
         groups="multichannel_sync.group_mc_user"/>
 
+    <!-- ── Analytics ────────────────────────────────────────────────────── -->
+    <menuitem
+        id="menu_mc_analytics"
+        name="Analytics"
+        parent="menu_mc_root"
+        sequence="50"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_analytics_revenue_channel"
+        name="Revenue by Channel"
+        parent="menu_mc_analytics"
+        action="action_mc_analysis_revenue_by_channel"
+        sequence="10"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_analytics_revenue_month"
+        name="Revenue by Month"
+        parent="menu_mc_analytics"
+        action="action_mc_analysis_volume_by_month"
+        sequence="20"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_analytics_pivot"
+        name="Product Breakdown"
+        parent="menu_mc_analytics"
+        action="action_mc_analysis_pivot"
+        sequence="30"
+        groups="multichannel_sync.group_mc_user"/>
+
+    <menuitem
+        id="menu_mc_analytics_freshness"
+        name="Data Freshness"
+        parent="menu_mc_analytics"
+        action="action_mc_data_freshness"
+        sequence="40"
+        groups="multichannel_sync.group_mc_user"/>
+
     <!-- ── Logs ───────────────────────────────────────────────────────── -->
     <menuitem
         id="menu_mc_logs"

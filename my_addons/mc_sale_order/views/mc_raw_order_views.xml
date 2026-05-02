@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mc_raw_order_search" model="ir.ui.view">
+        <field name="name">mc.raw.order.search</field>
+        <field name="model">mc.raw.order</field>
+        <field name="arch" type="xml">
+            <search string="Raw Orders">
+                <field name="external_order_id"/>
+                <field name="channel_id"/>
+                <field name="parsed_customer_name"/>
+                <filter name="new" string="New" domain="[('state','=','new')]"/>
+                <filter name="parsed" string="Parsed" domain="[('state','=','parsed')]"/>
+                <filter name="processed" string="Processed" domain="[('state','=','processed')]"/>
+                <filter name="error" string="Errors" domain="[('state','=','error')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_channel" string="Channel" context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_mc_raw_order_tree" model="ir.ui.view">
+        <field name="name">mc.raw.order.tree</field>
+        <field name="model">mc.raw.order</field>
+        <field name="arch" type="xml">
+            <tree string="Raw Orders" decoration-danger="state == 'error'" decoration-success="state == 'processed'">
+                <field name="received_at"/>
+                <field name="channel_id"/>
+                <field name="external_order_id"/>
+                <field name="parsed_customer_name"/>
+                <field name="parsed_total_amount"/>
+                <field name="state" widget="badge"/>
+                <field name="sale_order_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mc_raw_order_form" model="ir.ui.view">
+        <field name="name">mc.raw.order.form</field>
+        <field name="model">mc.raw.order</field>
+        <field name="arch" type="xml">
+            <form string="Raw Order">
+                <header>
+                    <button name="action_parse" string="Parse" type="object" class="btn-primary" invisible="state not in ('new', 'error')"/>
+                    <button name="action_process" string="Create Sales Order" type="object" class="btn-primary" invisible="state != 'parsed'"/>
+                    <button name="action_reprocess" string="Reset Error" type="object" invisible="state != 'error'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="new,parsed,processed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_sale_order" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="not sale_order_id">
+                            <div class="o_stat_info"><span class="o_stat_text">Sales Order</span></div>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Source">
+                            <field name="channel_id"/>
+                            <field name="external_order_id"/>
+                            <field name="received_at"/>
+                        </group>
+                        <group string="Processing">
+                            <field name="parsed_at"/>
+                            <field name="processed_at"/>
+                            <field name="sale_order_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Parsed Data">
+                            <group>
+                                <group string="Customer">
+                                    <field name="parsed_customer_name"/>
+                                    <field name="parsed_customer_phone"/>
+                                    <field name="parsed_customer_email"/>
+                                    <field name="parsed_shipping_address"/>
+                                </group>
+                                <group string="Order">
+                                    <field name="parsed_external_order_id"/>
+                                    <field name="parsed_order_date"/>
+                                    <field name="parsed_total_amount"/>
+                                    <field name="parsed_currency"/>
+                                </group>
+                            </group>
+                            <field name="parsed_items_json"/>
+                        </page>
+                        <page string="Raw Payload">
+                            <field name="raw_payload" nolabel="1"/>
+                        </page>
+                        <page string="Error" invisible="state != 'error'">
+                            <field name="error_message" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mc_raw_order" model="ir.actions.act_window">
+        <field name="name">Raw Orders</field>
+        <field name="res_model">mc.raw.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_mc_raw_order_search"/>
+        <field name="context">{'search_default_group_channel': 1}</field>
+    </record>
+</odoo>

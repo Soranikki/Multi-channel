@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_mc_orders" name="Orders" parent="mc_core.menu_mc_root" sequence="30" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_raw_orders" name="Raw Orders" parent="mc_sale_order.menu_mc_orders" action="mc_sale_order.action_mc_raw_order" sequence="10" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_sale_orders" name="Sales Orders" parent="mc_sale_order.menu_mc_orders" action="mc_sale_order.action_mc_sale_order" sequence="20" groups="mc_core.group_mc_user"/>
+</odoo>

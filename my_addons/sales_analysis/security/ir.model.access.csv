@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sales_analysis_preset_user,sales.analysis.preset user,model_sales_analysis_preset,sales_analysis.group_sales_analysis_user,1,1,1,1
-access_sales_analysis_preset_manager,sales.analysis.preset manager,model_sales_analysis_preset,sales_analysis.group_sales_analysis_manager,1,1,1,1

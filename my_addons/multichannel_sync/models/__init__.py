@@ -7,3 +7,4 @@ from . import mc_stock_move
 from . import mc_order
 from . import mc_raw_order
 from . import mc_stock_adjustment_wizard
+from . import mc_analysis_report

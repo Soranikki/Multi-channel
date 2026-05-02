@@ -164,6 +164,32 @@ class McRawOrder(models.Model):
         for record in self.filtered(lambda r: r.state in ('new', 'error')):
             record._parse_raw_order()
 
+    def action_reprocess(self):
+        """
+        Reprocess button — resets error records back to 'new' so they can be
+        re-parsed after fixing mappings or correcting payload data.
+        Only applies to records in state 'error'.
+        """
+        error_records = self.filtered(lambda r: r.state == 'error')
+        if not error_records:
+            raise UserError('No error records selected to reprocess.')
+        error_records.write({
+            'state': 'new',
+            'error_message': False,
+            # Clear parsed fields so a fresh parse starts clean
+            'parsed_at': False,
+            'parsed_external_order_id': False,
+            'parsed_customer_name': False,
+            'parsed_customer_phone': False,
+            'parsed_shipping_address': False,
+            'parsed_order_date': False,
+            'parsed_total_amount': False,
+            'parsed_currency': False,
+            'parsed_items_json': False,
+        })
+        for rec in error_records:
+            rec.message_post(body='Reset to new for reprocessing.')
+
     def action_parse_all_new(self):
         """
         Called from the list view Action menu.
@@ -332,6 +358,21 @@ class McRawOrder(models.Model):
         order_date = self._parse_iso_datetime(
             payload.get('order_date'), external_order_id
         )
+        declared_total = float(payload.get('total_amount', 0.0))
+
+        # Warn when declared total_amount doesn't match computed item sum
+        # (allows up to 1 unit tolerance for rounding / discount differences)
+        computed_total = sum(
+            float(item.get('quantity', 0)) * float(item.get('unit_price', 0.0))
+            for item in items_raw
+        )
+        if declared_total > 0 and abs(declared_total - computed_total) > 1.0:
+            _logger.warning(
+                'mc.raw.order: order %s declared total_amount=%.2f but '
+                'item sum=%.2f (diff=%.2f). Storing declared value.',
+                external_order_id, declared_total, computed_total,
+                abs(declared_total - computed_total),
+            )
 
         return {
             'external_order_id': external_order_id,
@@ -339,7 +380,7 @@ class McRawOrder(models.Model):
             'customer_phone':    str(payload.get('customer_phone', '')).strip(),
             'shipping_address':  str(payload.get('shipping_address', '')).strip(),
             'order_date':        order_date,
-            'total_amount':      float(payload.get('total_amount', 0.0)),
+            'total_amount':      declared_total,
             'currency':          str(payload.get('currency', 'VND')).strip(),
             'items':             items,
         }

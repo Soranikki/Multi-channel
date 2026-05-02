@@ -1,0 +1,48 @@
+msgid ""
+msgstr ""
+"Language: vi_VN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mc_core
+msgid "Multichannel Sales"
+msgstr "Bán hàng Đa kênh"
+
+#. module: mc_core
+msgid "Channels"
+msgstr "Kênh bán hàng"
+
+#. module: mc_core
+msgid "Sync Logs"
+msgstr "Lịch sử Đồng bộ"
+
+#. module: mc_core
+msgid "Platform"
+msgstr "Nền tảng"
+
+#. module: mc_core
+msgid "Active"
+msgstr "Hoạt động"
+
+#. module: mc_core
+msgid "Details"
+msgstr "Chi tiết"
+
+#. module: mc_core
+msgid "Summary"
+msgstr "Tóm tắt"
+
+#. module: mc_core
+msgid "Status"
+msgstr "Trạng thái"
+
+#. module: mc_core
+msgid "Channel"
+msgstr "Kênh bán"
+
+#. module: mc_core
+msgid "Settings"
+msgstr "Cài đặt"
+

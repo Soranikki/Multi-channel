@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class McChannel(models.Model):
     """
     Represents a sales channel (e.g. Shopee, TikTok Shop).
-    Each channel has a unique code that drives parser dispatch in the pipeline.
+    Each channel has a unique code that the Integration Service uses to route
+    normalized payloads into the correct bucket.
+
+    The Integration Service URL is stored in ir.config_parameter
+    (key: multichannel_sync.integration_service_url) — not hardcoded here.
     """
     _name = 'mc.channel'
     _description = 'Sales Channel'
@@ -37,12 +45,18 @@ class McChannel(models.Model):
         string='Last Sync At',
         readonly=True,
     )
+    last_sync_duration = fields.Float(
+        string='Last Sync Duration (s)',
+        digits=(8, 2),
+        readonly=True,
+        help='How long the last pipeline run took, in seconds.',
+    )
     sync_status = fields.Selection(
         selection=[
-            ('idle', 'Idle'),
+            ('idle',    'Idle'),
             ('syncing', 'Syncing'),
             ('success', 'Success'),
-            ('error', 'Error'),
+            ('error',   'Error'),
         ],
         string='Sync Status',
         default='idle',
@@ -109,52 +123,89 @@ class McChannel(models.Model):
     def action_run_pipeline(self) -> dict:
         """
         One-click pipeline for this channel:
-            1. Parse all raw orders in state 'new'.
-            2. Process all raw orders now in state 'parsed'.
+            1. Set sync_status = 'syncing' immediately for UI feedback.
+            2. Parse all raw orders in state 'new'.
+            3. Process all raw orders now in state 'parsed'.
+            4. Update last_sync_at, last_sync_duration, sync_status.
 
-        Returns a client notification summarising results.
+        Returns a client notification summarising detailed results:
+            - how many were new, how many parsed successfully
+            - how many were processed into orders, how many errored
         """
+        import time
         self.ensure_one()
+
+        # ── Signal the UI that the pipeline is running ────────────────────
+        self.write({'sync_status': 'syncing'})
+        self.env.cr.commit()  # flush to DB so the UI reflects 'syncing'
+
+        start_time = time.time()
         RawOrder = self.env['mc.raw.order']
 
-        # Step 1: parse all new raw orders for this channel
+        # ── Step 1: parse all new raw orders ─────────────────────────────
         new_orders = RawOrder.search([
             ('channel_id', '=', self.id),
             ('state', '=', 'new'),
         ])
+        parse_ok = 0
+        parse_err = 0
         for raw in new_orders:
-            raw._parse_raw_order()
+            try:
+                raw._parse_raw_order()
+                if raw.state == 'parsed':
+                    parse_ok += 1
+                else:
+                    parse_err += 1
+            except Exception as exc:
+                parse_err += 1
+                _logger.warning('Pipeline parse error id=%s: %s', raw.id, exc)
 
-        # Step 2: process all parsed raw orders for this channel
+        # ── Step 2: process all parsed raw orders ─────────────────────────
         parsed_orders = RawOrder.search([
             ('channel_id', '=', self.id),
             ('state', '=', 'parsed'),
         ])
-        created = 0
-        errors = 0
+        process_ok = 0
+        process_err = 0
         for raw in parsed_orders:
             try:
                 raw._process_raw_order()
-                created += 1
-            except Exception:
-                errors += 1
+                if raw.state == 'processed':
+                    process_ok += 1
+                else:
+                    process_err += 1
+            except Exception as exc:
+                process_err += 1
+                _logger.warning('Pipeline process error id=%s: %s', raw.id, exc)
 
-        # Update channel sync metadata
+        # ── Update channel sync metadata ──────────────────────────────────
+        elapsed = round(time.time() - start_time, 2)
+        total_errors = parse_err + process_err
         self.write({
-            'last_sync_at': fields.Datetime.now(),
-            'sync_status':  'error' if (errors and not created) else 'success',
+            'last_sync_at':       fields.Datetime.now(),
+            'last_sync_duration': elapsed,
+            'sync_status':        'error' if total_errors and not process_ok else 'success',
         })
 
-        msg = f'Pipeline complete: {created} order(s) created'
-        if errors:
-            msg += f', {errors} error(s). Check the Error Log.'
+        # ── Build result notification ─────────────────────────────────────
+        lines = []
+        if new_orders:
+            lines.append(f'Parsed: {parse_ok} ok, {parse_err} error(s)')
+        lines.append(f'Orders created: {process_ok}')
+        if process_err:
+            lines.append(f'Processing errors: {process_err} — check Error Log.')
+        if not new_orders and not parsed_orders:
+            lines.append('No new or pending raw orders to process.')
+        msg = ' | '.join(lines)
+
+        notif_type = 'warning' if total_errors else 'success'
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'Pipeline Complete',
+                'title': f'Pipeline — {self.name} ({elapsed}s)',
                 'message': msg,
-                'type': 'warning' if errors else 'success',
-                'sticky': errors > 0,
+                'type': notif_type,
+                'sticky': total_errors > 0,
             },
         }

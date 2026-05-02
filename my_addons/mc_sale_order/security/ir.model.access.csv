@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mc_raw_order_user,mc.raw.order user,model_mc_raw_order,mc_core.group_mc_user,1,1,1,0
+access_mc_raw_order_manager,mc.raw.order manager,model_mc_raw_order,mc_core.group_mc_manager,1,1,1,1

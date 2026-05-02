@@ -42,6 +42,7 @@
                 <field name="channel_id"/>
                 <field name="external_order_id" optional="show"/>
                 <field name="customer_name"/>
+                <field name="product_count" string="Products" optional="show"/>
                 <field name="state" widget="badge"
                     decoration-info="state == 'draft'"
                     decoration-warning="state == 'confirmed'"
@@ -74,6 +75,12 @@
                         string="Cancel"
                         type="object"
                         invisible="state not in ('draft', 'confirmed')"/>
+                    <button name="action_reset_to_draft"
+                        string="Reset to Draft"
+                        type="object"
+                        class="btn-warning"
+                        invisible="state != 'cancelled'"
+                        confirm="This will reset the cancelled order to draft and re-apply stock reservation. Continue?"/>
                     <field name="state" widget="statusbar"
                         statusbar_visible="draft,confirmed,done"/>
                 </header>
@@ -91,6 +98,9 @@
                                 <span class="o_stat_text">Raw Order</span>
                             </div>
                         </button>
+                        <div class="oe_stat_button o_not_clickable" icon="fa-cube">
+                            <field name="product_count" widget="statinfo" string="Products"/>
+                        </div>
                     </div>
 
                     <div class="oe_title">
@@ -114,15 +124,21 @@
 
                     <notebook>
                         <page string="Order Lines" name="lines">
-                            <field name="line_ids" widget="one2many">
+                            <!-- Lines are editable only in draft. After confirm they are locked. -->
+                            <field name="line_ids" widget="one2many"
+                                readonly="state != 'draft'">
                                 <tree editable="bottom">
                                     <field name="external_sku" readonly="1"/>
-                                    <field name="product_id"/>
+                                    <field name="product_id"
+                                        readonly="parent.state != 'draft'"/>
                                     <field name="internal_sku" readonly="1"/>
                                     <field name="product_name"/>
-                                    <field name="quantity"/>
-                                    <field name="unit_price"/>
-                                    <field name="discount"/>
+                                    <field name="quantity"
+                                        readonly="parent.state != 'draft'"/>
+                                    <field name="unit_price"
+                                        readonly="parent.state != 'draft'"/>
+                                    <field name="discount"
+                                        readonly="parent.state != 'draft'"/>
                                     <field name="subtotal" readonly="1"/>
                                 </tree>
                             </field>
