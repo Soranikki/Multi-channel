@@ -3,3 +3,5 @@ access_mc_channel_user,mc.channel user,model_mc_channel,mc_core.group_mc_user,1,
 access_mc_channel_manager,mc.channel manager,model_mc_channel,mc_core.group_mc_manager,1,1,1,1
 access_mc_sync_log_user,mc.sync.log user,model_mc_sync_log,mc_core.group_mc_user,1,0,0,0
 access_mc_sync_log_manager,mc.sync.log manager,model_mc_sync_log,mc_core.group_mc_manager,1,1,1,1
+access_mc_integration_service_user,mc.integration.service user,model_mc_integration_service,mc_core.group_mc_user,1,0,0,0
+access_mc_integration_service_manager,mc.integration.service manager,model_mc_integration_service,mc_core.group_mc_manager,1,1,1,1

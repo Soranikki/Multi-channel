@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from odoo import fields, models
 
 
@@ -8,18 +7,12 @@ class McChannel(models.Model):
     _order = 'sequence, name'
 
     name = fields.Char(string='Channel Name', required=True)
-    code = fields.Selection(
-        selection=[
-            ('shopee', 'Shopee'),
-            ('tiktok', 'TikTok Shop'),
-            ('manual', 'Manual Entry'),
-        ],
-        string='Channel Code',
-        required=True,
-    )
+    code = fields.Char(string='Channel Code', required=True, index=True)
     active = fields.Boolean(default=True)
     sequence = fields.Integer(default=10)
     description = fields.Text()
+    platform_icon = fields.Binary(string='Platform Icon')
+    platform_icon_filename = fields.Char(string='Icon Filename')
     last_sync_at = fields.Datetime(string='Last Sync At', readonly=True)
     last_sync_duration = fields.Float(string='Last Sync Duration (s)', digits=(8, 2), readonly=True)
     sync_status = fields.Selection(

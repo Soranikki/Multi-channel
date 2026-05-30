@@ -15,7 +15,7 @@ class McProductMapping(models.Model):
 
     internal_sku = fields.Char(related='product_id.default_code', string='Internal Reference', readonly=True)
     product_name = fields.Char(related='product_id.display_name', string='Product', readonly=True)
-    channel_code = fields.Selection(related='channel_id.code', readonly=True)
+    channel_code = fields.Char(related='channel_id.code', string='Channel Code', readonly=True)
     qty_available = fields.Float(related='product_id.qty_available', string='On Hand', readonly=True)
     virtual_available = fields.Float(related='product_id.virtual_available', string='Forecasted', readonly=True)
     mc_buffer_qty = fields.Float(related='product_id.mc_buffer_qty', string='Buffer Qty', readonly=True)

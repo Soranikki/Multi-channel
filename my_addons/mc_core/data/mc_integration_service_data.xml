@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mc_integration_service_connector" model="mc.integration.service">
+            <field name="name">Odoo WS Connector</field>
+            <field name="code">odoo_ws_connector</field>
+            <field name="base_url">http://odoo-ws-connector:8021</field>
+            <field name="sequence">10</field>
+            <field name="active">True</field>
+            <field name="description">URL of the Odoo WebSocket Connector service. This service bridges middleware events to Odoo via XML-RPC and handles outbound inventory syncs.</field>
+        </record>
+
+        <record id="mc_integration_service_middleware" model="mc.integration.service">
+            <field name="name">Middleware</field>
+            <field name="code">middleware</field>
+            <field name="base_url">http://middleware:8020</field>
+            <field name="sequence">20</field>
+            <field name="active">True</field>
+            <field name="description">URL of the Multi-channel Integration Middleware. This service normalizes platform events and manages channel configurations.</field>
+        </record>
+    </data>
+</odoo>

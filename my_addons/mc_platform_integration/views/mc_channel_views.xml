@@ -12,13 +12,13 @@
                         <field name="middleware_channel_key"/>
                     </group>
                     <group>
-                        <field name="auto_parse_orders"/>
-                        <field name="auto_check_mapping"/>
-                        <field name="auto_process_orders"/>
-                        <field name="auto_reconcile_orders"/>
+                        <field name="strict_stock_check"/>
                         <field name="last_realtime_received_at"/>
                     </group>
                 </group>
+            </xpath>
+            <xpath expr="//field[@name='description']" position="after">
+                <field name="middleware_config_json" invisible="1"/>
             </xpath>
         </field>
     </record>

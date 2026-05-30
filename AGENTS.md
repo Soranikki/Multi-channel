@@ -98,6 +98,16 @@ odoo-dev -d <db_name> -u <module_name> --stop-after-init
 odoo-dev -d <db_name> -i <module_name> --test-enable --stop-after-init
 ```
 
+## Runtime Testing in Bash Tool
+
+⚠️ The Bash tool kills background processes when the shell session ends. Odoo's cron thread will also log `psycopg2.InterfaceError` after shutdown (harmless). To test a running Odoo server, always start Odoo + run tests in **one synchronous command**.
+
+Load the `odoo-test-runner` skill for full details:
+
+```
+skill({ name: "odoo-test-runner" })
+```
+
 ## Module Scaffolding Workflow
 
 To create a new custom module:

@@ -6,9 +6,14 @@ from typing import Any
 
 import websockets
 import httpx
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 from odoo_client import OdooRpcClient
+
+
+class ReactivateRequest(BaseModel):
+    snapshot: dict[str, Any] | None = None
 
 
 app = FastAPI(title="Odoo WebSocket Connector")
@@ -110,6 +115,36 @@ async def poll_outbound_stock_syncs() -> None:
             print(f"[OdooConnector] Outbound sync polling error: {exc}")
         
         await asyncio.sleep(5)
+
+
+@app.post("/api/channel/{code}/archive")
+async def archive_channel_config(code: str) -> dict[str, Any]:
+    middleware_url = os.getenv("MIDDLEWARE_URL", "http://middleware:8020").rstrip("/")
+    async with httpx.AsyncClient() as client:
+        get_resp = await client.get(f"{middleware_url}/api/channel-configs/{code}", timeout=10.0)
+        if get_resp.status_code == 404:
+            return {"snapshot": None, "warning": "No middleware config found for this channel."}
+        if get_resp.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"Middleware GET failed: {get_resp.status_code}")
+        snapshot = get_resp.json()
+        del_resp = await client.delete(f"{middleware_url}/api/channel-configs/{code}", timeout=10.0)
+        if del_resp.status_code not in (204, 404):
+            print(f"[OdooConnector] Warning: DELETE middleware config returned {del_resp.status_code}")
+        return {"snapshot": snapshot}
+
+
+@app.post("/api/channel/{code}/reactivate")
+async def reactivate_channel_config(code: str, body: ReactivateRequest) -> dict[str, Any]:
+    if not body.snapshot:
+        return {"status": "ok", "message": "No snapshot to restore."}
+    middleware_url = os.getenv("MIDDLEWARE_URL", "http://middleware:8020").rstrip("/")
+    async with httpx.AsyncClient() as client:
+        post_resp = await client.post(f"{middleware_url}/api/channel-configs", json=body.snapshot, timeout=10.0)
+        if post_resp.status_code == 409:
+            return {"status": "ok", "message": "Config already exists on middleware."}
+        if post_resp.status_code not in (200, 201):
+            raise HTTPException(status_code=502, detail=f"Middleware POST failed: {post_resp.status_code}")
+        return {"status": "ok", "message": "Config restored on middleware."}
 
 
 @app.on_event("startup")

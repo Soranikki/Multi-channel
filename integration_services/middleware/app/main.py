@@ -3,12 +3,14 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
+import httpx
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from pydantic import BaseModel
 
 from app.normalizer import normalize_event
 from app.raw_store import build_store
-from app.adapters import shopee_adapter, tiktok_adapter
+from app.channel_config import ChannelConfig, config_store
+from app.data.default_configs import SEED_CONFIGS
 
 
 app = FastAPI(title="Multichannel Integration Middleware")
@@ -23,21 +25,89 @@ class InventoryUpdate(BaseModel):
     synced_qty: float
 
 
+@app.on_event("startup")
+async def startup() -> None:
+    config_store.load_defaults(SEED_CONFIGS)
+
+
 @app.post("/api/outbound/inventory")
 async def sync_inventory_to_platform(payload: InventoryUpdate) -> dict[str, Any]:
     platform = payload.platform.strip().lower()
+    config = config_store.get(platform)
+    if not config or not config.inventory_endpoint:
+        raise HTTPException(status_code=400, detail=f"No inventory endpoint configured for platform: {platform}")
     try:
-        if platform == "shopee":
-            await shopee_adapter.push_inventory(payload.external_sku, payload.synced_qty)
-        elif platform == "tiktok":
-            await tiktok_adapter.push_inventory(payload.external_sku, payload.synced_qty)
-        else:
-            raise HTTPException(status_code=400, detail=f"Unsupported platform: {platform}")
-        
+        endpoint = config.inventory_endpoint
+        url = endpoint.url.replace("{sku}", payload.external_sku)
+        body = {
+            k: (str(v).replace("{qty}", str(payload.synced_qty)) if isinstance(v, str) else v)
+            for k, v in endpoint.body_template.items()
+        }
+        async with httpx.AsyncClient() as client:
+            if endpoint.method.upper() == "PUT":
+                resp = await client.put(url, json=body, timeout=10.0)
+            elif endpoint.method.upper() == "POST":
+                resp = await client.post(url, json=body, timeout=10.0)
+            else:
+                raise HTTPException(status_code=500, detail=f"Unsupported HTTP method: {endpoint.method}")
+            resp.raise_for_status()
         return {"status": "dispatched", "platform": platform, "sku": payload.external_sku, "qty": payload.synced_qty}
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
+
+@app.get("/api/channel-configs")
+def list_configs() -> list[dict[str, Any]]:
+    return [c.model_dump() for c in config_store.list()]
+
+
+@app.get("/api/channel-configs/{platform}")
+def get_config(platform: str) -> dict[str, Any]:
+    config = config_store.get(platform.strip().lower())
+    if not config:
+        raise HTTPException(status_code=404, detail=f"No config found for platform '{platform}'")
+    return config.model_dump()
+
+
+@app.post("/api/channel-configs", status_code=201)
+def create_config(data: dict[str, Any]) -> dict[str, Any]:
+    platform = data.get("platform", "").strip().lower()
+    if not platform:
+        raise HTTPException(status_code=400, detail="Field 'platform' is required")
+    data["platform"] = platform
+    if config_store.get(platform):
+        raise HTTPException(status_code=409, detail=f"Config for platform '{platform}' already exists")
+    try:
+        config = ChannelConfig(**data)
+        config_store.create(config)
+        return config.model_dump()
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.put("/api/channel-configs/{platform}")
+def update_config(platform: str, data: dict[str, Any]) -> dict[str, Any]:
+    platform = platform.strip().lower()
+    if not config_store.get(platform):
+        raise HTTPException(status_code=404, detail=f"No config found for platform '{platform}'")
+    data["platform"] = platform
+    try:
+        config = ChannelConfig(**data)
+        config_store.update(platform, config)
+        return config.model_dump()
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.delete("/api/channel-configs/{platform}", status_code=204)
+def delete_config(platform: str) -> None:
+    platform = platform.strip().lower()
+    try:
+        config_store.delete(platform)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
 
 
 def utc_now() -> str:
@@ -46,7 +116,12 @@ def utc_now() -> str:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    return {"status": "ok", "service": "middleware", "odoo_clients": len(odoo_clients)}
+    return {
+        "status": "ok",
+        "service": "middleware",
+        "odoo_clients": len(odoo_clients),
+        "config_count": len(config_store.list()),
+    }
 
 
 @app.get("/raw-events")
@@ -82,7 +157,6 @@ async def ws_odoo(websocket: WebSocket) -> None:
     await websocket.send_json({"event_type": "middleware.connected", "sent_at": utc_now()})
     try:
         while True:
-            # Receive ACK/heartbeat messages from the Odoo connector to keep the socket alive.
             await websocket.receive_text()
     except WebSocketDisconnect:
         pass

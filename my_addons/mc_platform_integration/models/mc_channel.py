@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
 import json
 import logging
 from datetime import datetime, timezone
 from typing import Any
 
+import requests
 from psycopg2 import IntegrityError
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 _logger = logging.getLogger(__name__)
@@ -17,20 +18,104 @@ class McChannel(models.Model):
 
     integration_enabled = fields.Boolean(string='Realtime Integration Enabled', default=False)
     middleware_channel_key = fields.Char(string='Middleware Channel Key', help='Platform key used by the external middleware, for example shopee or tiktok.')
-    auto_parse_orders = fields.Boolean(string='Auto Parse Incoming Orders', default=True)
-    auto_check_mapping = fields.Boolean(string='Auto Check SKU Mapping', default=True)
     strict_stock_check = fields.Boolean(string='Strict Stock Check (Prevent Overselling)', default=True, help="If true, raw orders will error out and not create a Sale Order if the virtual available stock (minus buffer) is less than the requested quantity.")
-    auto_process_orders = fields.Boolean(string='Auto Process Parsed Orders', default=True)
-    auto_reconcile_orders = fields.Boolean(string='Auto Reconcile Order Status', default=True)
     last_realtime_received_at = fields.Datetime(string='Last Realtime Event At', readonly=True)
+    middleware_config_json = fields.Text(
+        string='Archived Middleware Config (JSON)',
+        help='Snapshot of the middleware channel config, saved when the channel is archived. Restored if the channel is reactivated.',
+        readonly=True, copy=False,
+    )
+
+    def _get_connector_base_url(self):
+        Service = self.env['mc.integration.service']
+        url = Service._get_service_url('odoo_ws_connector')
+        if not url:
+            _logger.warning("No odoo_ws_connector URL configured in Integration Services.")
+        return url
+
+    def _call_connector_api(self, method, path, json_body=None):
+        base_url = self._get_connector_base_url()
+        if not base_url:
+            return None
+        url = f"{base_url}{path}"
+        try:
+            if method == 'GET':
+                resp = requests.get(url, timeout=(3.0, 5.0))
+            elif method == 'POST':
+                resp = requests.post(url, json=json_body or {}, timeout=(3.0, 5.0))
+            else:
+                return None
+            if resp.status_code >= 500:
+                _logger.warning("Connector API %s returned %s: %s", url, resp.status_code, resp.text)
+                return None
+            return resp.json() if resp.content else {}
+        except requests.RequestException as exc:
+            _logger.warning("Cannot reach odoo_ws_connector at %s: %s", url, exc)
+            return None
+
+    def _has_dependent_orders(self):
+        self.ensure_one()
+        raw_count = self.env['mc.raw.order'].search_count([('channel_id', '=', self.id)])
+        sale_count = self.env['sale.order'].search_count([('mc_channel_id', '=', self.id)])
+        return raw_count > 0 or sale_count > 0
+
+    def _archive_cleanup(self):
+        self.ensure_one()
+        result = self._call_connector_api('POST', f'/api/channel/{self.code}/archive')
+        if result and result.get('snapshot'):
+            return result['snapshot']
+        return None
+
+    def _restore_middleware_config(self):
+        self.ensure_one()
+        if not self.middleware_config_json:
+            return
+        try:
+            snapshot = json.loads(self.middleware_config_json)
+        except (json.JSONDecodeError, TypeError):
+            _logger.warning("Invalid middleware_config_json for channel %s, cannot restore.", self.code)
+            return
+        self._call_connector_api(
+            'POST',
+            f'/api/channel/{self.code}/reactivate',
+            json_body={'snapshot': snapshot},
+        )
+
+    def write(self, vals):
+        if 'active' in vals:
+            if vals.get('active') is False:
+                # ARCHIVE
+                vals['integration_enabled'] = False
+                result = super().write(vals)
+                for channel in self:
+                    snapshot = channel._archive_cleanup()
+                    if snapshot:
+                        channel.write({'middleware_config_json': json.dumps(snapshot)})
+                return result
+            elif vals.get('active') is True:
+                # REACTIVATE
+                for channel in self:
+                    if channel.middleware_config_json:
+                        channel._restore_middleware_config()
+                result = super().write(vals)
+                for channel in self:
+                    if channel.middleware_config_json:
+                        channel.write({'middleware_config_json': False})
+                return result
+        return super().write(vals)
+
+    def unlink(self):
+        for channel in self:
+            if channel._has_dependent_orders():
+                raise UserError(
+                    "Cannot delete channel '%s' because it has linked orders. "
+                    "Archive it instead." % channel.name
+                )
+            channel._archive_cleanup()
+        return super().unlink()
 
     @api.model
     def ingest_normalized_order(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """Entry point used by the external WebSocket connector through XML-RPC.
-
-        The payload must already be normalized by the middleware into the standard
-        mc.raw.order JSON shape: external_order_id, customer fields, and items.
-        """
         if not isinstance(payload, dict):
             raise ValueError('Normalized payload must be a JSON object.')
 
@@ -99,19 +184,16 @@ class McChannel(models.Model):
             else:
                 ingest_status = 'updated'
 
-        if channel.auto_parse_orders and raw_order.state in ('new', 'error'):
+        # Pipeline: parse → mapping → process → reconcile (mandatory)
+        if raw_order.state in ('new', 'error'):
             raw_order.action_parse()
 
-        mapping_result = {}
-        if channel.auto_check_mapping:
-            mapping_result = raw_order._check_product_mapping()
+        mapping_result = raw_order._check_product_mapping()
 
-        if channel.auto_process_orders and raw_order.state == 'parsed' and raw_order.mapping_status in ('mapped', 'unchecked'):
+        if raw_order.state == 'parsed' and raw_order.mapping_status in ('mapped', 'unchecked'):
             raw_order.action_process()
 
-        reconcile_result = {}
-        if channel.auto_reconcile_orders:
-            reconcile_result = raw_order._reconcile_with_sale_order()
+        reconcile_result = raw_order._reconcile_with_sale_order()
 
         now = fields.Datetime.now()
         channel.sudo().write({
@@ -142,7 +224,6 @@ class McChannel(models.Model):
     def cron_process_incoming_orders(self, limit: int = 200) -> None:
         channels = self.sudo().search([
             ('integration_enabled', '=', True),
-            ('auto_process_orders', '=', True),
         ])
         if not channels:
             return
@@ -156,8 +237,7 @@ class McChannel(models.Model):
             try:
                 with self.env.cr.savepoint():
                     raw_order.action_process()
-                    if raw_order.channel_id.auto_reconcile_orders:
-                        raw_order._reconcile_with_sale_order()
+                    raw_order._reconcile_with_sale_order()
             except Exception as exc:
                 self.env['mc.sync.log']._log(
                     'error',
@@ -170,7 +250,6 @@ class McChannel(models.Model):
     def cron_reconcile_order_payment_status(self, limit: int = 200) -> None:
         channels = self.sudo().search([
             ('integration_enabled', '=', True),
-            ('auto_reconcile_orders', '=', True),
         ])
         if not channels:
             return

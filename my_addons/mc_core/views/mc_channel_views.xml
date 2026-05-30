@@ -39,6 +39,10 @@
                             <field name="last_sync_duration"/>
                         </group>
                     </group>
+                    <group string="Platform">
+                        <field name="platform_icon" filename="platform_icon_filename"/>
+                        <field name="platform_icon_filename" invisible="1"/>
+                    </group>
                     <field name="description" placeholder="Channel notes..."/>
                 </sheet>
             </form>

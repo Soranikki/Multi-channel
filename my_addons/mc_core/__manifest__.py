@@ -14,8 +14,10 @@
         'security/mc_core_security.xml',
         'security/ir.model.access.csv',
         'data/mc_channel_data.xml',
+        'data/mc_integration_service_data.xml',
         'views/menus.xml',
         'views/mc_channel_views.xml',
         'views/mc_sync_log_views.xml',
+        'views/mc_integration_service_views.xml',
     ],
 }

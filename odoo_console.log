@@ -1,0 +1,30 @@
+2026-05-30 17:39:23,032 128891 INFO ? odoo: Odoo version 17.0 
+2026-05-30 17:39:23,033 128891 INFO ? odoo: Using configuration file at /home/soranikki/odoo-dev/Multi-channel/conf/odoo.conf 
+2026-05-30 17:39:23,033 128891 INFO ? odoo: addons paths: ['/home/soranikki/odoo-dev/Multi-channel/odoo/addons', '/home/soranikki/.local/share/Odoo/addons/17.0', '/home/soranikki/odoo-dev/Multi-channel/addons', '/home/soranikki/odoo-dev/Multi-channel/my_addons'] 
+2026-05-30 17:39:23,033 128891 INFO ? odoo: database: khanh@localhost:5432 
+2026-05-30 17:39:23,139 128891 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-05-30 17:39:23,280 128891 INFO ? odoo.service.server: HTTP service (werkzeug) running on Apex-Predator.localdomain:8069 
+2026-05-30 17:39:23,296 128891 INFO Multi-Channel odoo.modules.loading: loading 1 modules... 
+2026-05-30 17:39:23,302 128891 INFO Multi-Channel odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 extra) 
+2026-05-30 17:39:23,326 128891 INFO Multi-Channel odoo.modules.loading: loading 58 modules... 
+2026-05-30 17:39:23,685 128891 INFO Multi-Channel odoo.modules.loading: 58 modules loaded in 0.36s, 0 queries (+0 extra) 
+2026-05-30 17:39:23,805 128891 INFO Multi-Channel odoo.modules.loading: Modules loaded. 
+2026-05-30 17:39:23,809 128891 INFO Multi-Channel odoo.modules.registry: Registry loaded in 0.531s 
+2026-05-30 17:39:26,807 128891 INFO Multi-Channel odoo.addons.base.models.ir_http: Generating routing map for key None 
+2026-05-30 17:39:27,259 128891 INFO Multi-Channel werkzeug: 172.18.0.3 - - [30/May/2026 17:39:27] "POST /xmlrpc/2/object HTTP/1.1" 200 - 18 0.017 0.438
+2026-05-30 17:39:27,402 128891 INFO Multi-Channel odoo.service.server: Initiating shutdown 
+2026-05-30 17:39:27,402 128891 INFO Multi-Channel odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-05-30 17:39:27,806 128891 INFO Multi-Channel odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 4 connections  
+Exception in thread odoo.service.cron.cron0:
+Traceback (most recent call last):
+  File "/home/soranikki/.pyenv/versions/3.10.20/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/home/soranikki/.pyenv/versions/3.10.20/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/soranikki/odoo-dev/Multi-channel/odoo/service/server.py", line 553, in target
+    self.cron_thread(i)
+  File "/home/soranikki/odoo-dev/Multi-channel/odoo/service/server.py", line 535, in cron_thread
+    _run_cron(cr)
+  File "/home/soranikki/odoo-dev/Multi-channel/odoo/service/server.py", line 519, in _run_cron
+    pg_conn.poll()
+psycopg2.InterfaceError: connection already closed
