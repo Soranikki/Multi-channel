@@ -14,6 +14,9 @@
                 <field name="mc_channel_id"/>
                 <field name="mc_external_order_id"/>
                 <field name="mc_raw_order_id" readonly="1"/>
+                <field name="mc_order_status" widget="badge"/>
+                <field name="mc_payment_status" widget="badge"/>
+                <field name="mc_last_channel_status_at"/>
             </xpath>
             <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="after">
                 <field name="mc_external_sku" readonly="1" optional="show"/>
@@ -29,6 +32,8 @@
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="mc_channel_id" optional="show"/>
                 <field name="mc_external_order_id" optional="show"/>
+                <field name="mc_order_status" optional="show" widget="badge"/>
+                <field name="mc_payment_status" optional="show" widget="badge"/>
             </xpath>
         </field>
     </record>
@@ -41,6 +46,8 @@
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="mc_channel_id"/>
                 <field name="mc_external_order_id"/>
+                <field name="mc_order_status"/>
+                <field name="mc_payment_status"/>
             </xpath>
             <xpath expr="//group" position="inside">
                 <filter string="Channel" name="group_mc_channel" context="{'group_by': 'mc_channel_id'}"/>

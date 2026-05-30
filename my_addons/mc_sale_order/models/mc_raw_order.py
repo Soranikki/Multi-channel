@@ -3,7 +3,9 @@ import json
 import logging
 from datetime import datetime
 
-from odoo import api, fields, models
+from psycopg2 import IntegrityError
+
+from odoo import Command, api, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -129,29 +131,39 @@ class McRawOrder(models.Model):
         if self.state != 'parsed':
             raise UserError('Raw order must be parsed before processing.')
         try:
-            sale_order = self._create_sale_order_from_raw()
-            self.write({
-                'state': 'processed',
-                'error_message': False,
-                'processed_at': fields.Datetime.now(),
-                'sale_order_id': sale_order.id,
-            })
+            with self.env.cr.savepoint():
+                sale_order = self._upsert_sale_order_from_raw()
+                self._apply_channel_status_to_sale_order(sale_order)
+                self.write({
+                    'state': 'processed',
+                    'error_message': False,
+                    'processed_at': fields.Datetime.now(),
+                    'sale_order_id': sale_order.id,
+                })
             self.env['mc.sync.log']._log(
                 'info',
                 f'Sales order {sale_order.name} created from raw order {self.parsed_external_order_id}.',
                 channel_id=self.channel_id.id,
                 reference=self.parsed_external_order_id,
             )
+        except IntegrityError as exc:
+            message = 'Duplicate conflict while processing order. Please retry.'
+            self.env.cr.rollback()
+            self.write({'state': 'error', 'error_message': message})
+            self.env['mc.sync.log']._log('error', f'Processing conflict for raw order #{self.id}: {exc}', self.channel_id.id, self.parsed_external_order_id)
+            _logger.warning('mc.raw.order process integrity conflict id=%s: %s', self.id, exc)
         except Exception as exc:
             message = str(exc)
             self.write({'state': 'error', 'error_message': message})
             self.env['mc.sync.log']._log('error', f'Processing failed for raw order #{self.id}: {message}', self.channel_id.id, self.parsed_external_order_id)
             _logger.warning('mc.raw.order process failed id=%s: %s', self.id, message)
 
-    def _create_sale_order_from_raw(self):
+    def _upsert_sale_order_from_raw(self):
         items = json.loads(self.parsed_items_json or '[]')
         resolved_lines = []
         unmapped = []
+        oversold = []
+        
         for item in items:
             mapping = self.env['mc.product.mapping'].search([
                 ('channel_id', '=', self.channel_id.id),
@@ -159,26 +171,85 @@ class McRawOrder(models.Model):
                 ('is_active', '=', True),
             ], limit=1)
             if mapping:
+                # Overselling Check
+                requested_qty = item['quantity']
+                if self.channel_id.sudo().strict_stock_check:
+                    # check if requested exceeds what we believe we have available to sync
+                    if requested_qty > mapping.synced_qty:
+                        oversold.append(f"{item['external_sku']} (Req: {requested_qty}, Avail: {mapping.synced_qty})")
+                
                 resolved_lines.append((mapping, item))
             else:
                 unmapped.append(item['external_sku'])
+                
         if unmapped:
             raise UserError('Unmapped SKU(s):\n' + '\n'.join(f'  - {sku}' for sku in unmapped))
+            
+        if oversold:
+            raise UserError('Overselling prevented: Not enough stock for:\n' + '\n'.join(f'  - {sku}' for sku in oversold))
 
         partner = self._find_or_create_partner()
-        sale_order = self.env['sale.order'].create({
+        line_commands = [
+            Command.create(self._prepare_sale_order_line(mapping, item))
+            for mapping, item in resolved_lines
+        ]
+        order_vals = {
             'partner_id': partner.id,
             'date_order': self.parsed_order_date,
             'client_order_ref': self.parsed_external_order_id,
             'mc_channel_id': self.channel_id.id,
             'mc_external_order_id': self.parsed_external_order_id,
             'mc_raw_order_id': self.id,
-            'order_line': [
-                (0, 0, self._prepare_sale_order_line(mapping, item))
-                for mapping, item in resolved_lines
-            ],
-        })
+        }
+
+        sale_order = self.env['sale.order'].search([
+            ('mc_channel_id', '=', self.channel_id.id),
+            ('mc_external_order_id', '=', self.parsed_external_order_id),
+        ], limit=1)
+
+        if sale_order:
+            if sale_order.state in ('draft', 'sent'):
+                sale_order.order_line.unlink()
+                sale_order.write({**order_vals, 'order_line': line_commands})
+            else:
+                sale_order.write({
+                    'partner_id': partner.id,
+                    'client_order_ref': self.parsed_external_order_id,
+                    'mc_raw_order_id': self.id,
+                })
+        else:
+            sale_order = self.env['sale.order'].create({
+                **order_vals,
+                'order_line': line_commands,
+            })
         return sale_order
+
+    def _apply_channel_status_to_sale_order(self, sale_order) -> None:
+        self.ensure_one()
+        if not hasattr(sale_order, '_mc_apply_channel_statuses'):
+            return
+        order_status = self._get_channel_order_status() or 'unknown'
+        payment_status = self._get_channel_payment_status() or 'unknown'
+        updated_at = self._get_channel_status_updated_at()
+        sale_order._mc_apply_channel_statuses(order_status, payment_status, updated_at)
+
+    def _get_channel_order_status(self):
+        self.ensure_one()
+        if 'canonical_order_status' in self._fields:
+            return self.canonical_order_status
+        return False
+
+    def _get_channel_payment_status(self):
+        self.ensure_one()
+        if 'canonical_payment_status' in self._fields:
+            return self.canonical_payment_status
+        return False
+
+    def _get_channel_status_updated_at(self):
+        self.ensure_one()
+        if 'platform_status_updated_at' in self._fields:
+            return self.platform_status_updated_at
+        return False
 
     def _prepare_sale_order_line(self, mapping, item: dict) -> dict:
         product = mapping.product_id

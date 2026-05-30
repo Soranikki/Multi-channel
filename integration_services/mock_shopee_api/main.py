@@ -7,11 +7,18 @@ from typing import Any
 
 import websockets
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 
 app = FastAPI(title="Mock Shopee API")
 orders_path = Path(__file__).parent / "data" / "orders.json"
 status: dict[str, Any] = {"connected": False, "sent_events": 0, "last_ack": None, "last_error": None}
+
+# In-memory inventory store for mock platform
+_inventory_store: dict[str, float] = {}
+
+class InventoryUpdate(BaseModel):
+    qty: float
 
 
 def utc_now() -> str:
@@ -68,3 +75,14 @@ def health() -> dict[str, Any]:
 @app.get("/orders")
 def orders() -> list[dict[str, Any]]:
     return load_orders()
+
+@app.put("/api/v1/products/{sku}/inventory")
+def update_inventory(sku: str, update: InventoryUpdate) -> dict[str, Any]:
+    _inventory_store[sku] = update.qty
+    print(f"[Shopee] Mock API: Received stock update SKU={sku} -> Qty={update.qty}")
+    return {"status": "success", "sku": sku, "updated_qty": update.qty}
+
+@app.get("/api/v1/products/{sku}/inventory")
+def get_inventory(sku: str) -> dict[str, Any]:
+    qty = _inventory_store.get(sku, 0.0)
+    return {"status": "ok", "sku": sku, "current_qty": qty}

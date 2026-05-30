@@ -6,7 +6,10 @@
         <field name="inherit_id" ref="mc_sale_order.view_mc_raw_order_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="after">
+                <field name="canonical_order_status" widget="badge"/>
+                <field name="canonical_payment_status" widget="badge"/>
                 <field name="mapping_status" widget="badge"/>
+                <field name="reconcile_state" widget="badge"/>
             </xpath>
         </field>
     </record>
@@ -23,6 +26,22 @@
                 <field name="mapped_product_count"/>
             </xpath>
             <xpath expr="//notebook/page[field[@name='error_message']]" position="before">
+                <page string="Status Reconciliation">
+                    <group>
+                        <group>
+                            <field name="platform_order_status"/>
+                            <field name="platform_payment_status"/>
+                            <field name="platform_status_updated_at"/>
+                        </group>
+                        <group>
+                            <field name="canonical_order_status"/>
+                            <field name="canonical_payment_status"/>
+                            <field name="reconcile_state"/>
+                            <field name="reconciled_at"/>
+                        </group>
+                    </group>
+                    <field name="reconcile_message" nolabel="1"/>
+                </page>
                 <page string="SKU Mapping">
                     <group>
                         <field name="mapping_status"/>
@@ -42,9 +61,13 @@
             <xpath expr="//filter[@name='error']" position="after">
                 <filter name="mapped" string="Mapped" domain="[('mapping_status','=','mapped')]"/>
                 <filter name="unmapped" string="Unmapped" domain="[('mapping_status','in',('partial','unmapped'))]"/>
+                <filter name="reconciled" string="Reconciled" domain="[('reconcile_state','=','matched')]"/>
+                <filter name="mismatched" string="Mismatched" domain="[('reconcile_state','=','mismatched')]"/>
             </xpath>
             <xpath expr="//filter[@name='group_state']" position="after">
                 <filter name="group_mapping_status" string="Mapping Status" context="{'group_by': 'mapping_status'}"/>
+                <filter name="group_canonical_order_status" string="Order Status" context="{'group_by': 'canonical_order_status'}"/>
+                <filter name="group_reconcile_state" string="Reconcile State" context="{'group_by': 'reconcile_state'}"/>
             </xpath>
         </field>
     </record>

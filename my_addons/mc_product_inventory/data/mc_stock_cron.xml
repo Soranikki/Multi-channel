@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_mc_stock_sync_engine" model="ir.cron">
+        <field name="name">MC Push Stock Updates</field>
+        <field name="model_id" ref="mc_product_inventory.model_mc_product_mapping"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_queue_stock_updates()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

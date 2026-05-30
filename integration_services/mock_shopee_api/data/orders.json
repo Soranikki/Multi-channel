@@ -9,6 +9,9 @@
       "full_address": "123 Nguyễn Huệ, Quận 1, TP.HCM"
     },
     "create_time": "2026-05-05T09:00:00Z",
+    "order_status": "READY_TO_SHIP",
+    "payment_status": "PAID",
+    "order_status_updated_at": "2026-05-05T09:05:00Z",
     "currency": "VND",
     "total_amount": 885000,
     "items": [
@@ -29,6 +32,9 @@
       "full_address": "456 Lê Lợi, Quận 1, TP.HCM"
     },
     "create_time": "2026-05-05T09:15:00Z",
+    "order_status": "CANCELLED",
+    "payment_status": "FAILED",
+    "order_status_updated_at": "2026-05-05T09:20:00Z",
     "currency": "VND",
     "total_amount": 320000,
     "items": [

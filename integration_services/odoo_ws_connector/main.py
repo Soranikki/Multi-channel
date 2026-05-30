@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import websockets
+import httpx
 from fastapi import FastAPI
 
 from odoo_client import OdooRpcClient
@@ -16,9 +17,11 @@ status: dict[str, Any] = {
     "connected_to_middleware": False,
     "received_events": 0,
     "ingested_events": 0,
+    "outbound_syncs_processed": 0,
     "last_event_id": None,
     "last_result": None,
     "last_error": None,
+    "last_outbound_error": None,
 }
 
 
@@ -71,9 +74,48 @@ async def handle_event(websocket, event: dict[str, Any]) -> None:
         await websocket.send(json.dumps({"event_type": "connector.nack", "event_id": event_id, "error": str(exc)}, ensure_ascii=False))
 
 
+async def poll_outbound_stock_syncs() -> None:
+    middleware_api = os.getenv("MIDDLEWARE_API_URL", "http://middleware:8020/api/outbound/inventory")
+    while True:
+        try:
+            if not is_dry_run():
+                records = odoo.get_pending_stock_syncs()
+                if records:
+                    done_ids = []
+                    async with httpx.AsyncClient() as client:
+                        for record in records:
+                            channel_code = record.get("channel_code")
+                            if not channel_code:
+                                done_ids.append(record["id"])
+                                continue
+                            
+                            payload = {
+                                "platform": channel_code,
+                                "external_sku": record.get("external_sku"),
+                                "synced_qty": record.get("qty_to_sync", 0.0)
+                            }
+                            resp = await client.post(middleware_api, json=payload, timeout=10.0)
+                            if resp.status_code in (200, 201):
+                                done_ids.append(record["id"])
+                                status["outbound_syncs_processed"] += 1
+                            else:
+                                print(f"[OdooConnector] Outbound sync failed for {record['id']}: {resp.text}")
+                    
+                    if done_ids:
+                        odoo.mark_stock_sync_done(done_ids)
+                        
+            status["last_outbound_error"] = None
+        except Exception as exc:
+            status["last_outbound_error"] = str(exc)
+            print(f"[OdooConnector] Outbound sync polling error: {exc}")
+        
+        await asyncio.sleep(5)
+
+
 @app.on_event("startup")
 async def startup() -> None:
     asyncio.create_task(consume_normalized_events())
+    asyncio.create_task(poll_outbound_stock_syncs())
 
 
 @app.get("/health")

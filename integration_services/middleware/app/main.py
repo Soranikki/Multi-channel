@@ -3,16 +3,41 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from pydantic import BaseModel
 
 from app.normalizer import normalize_event
 from app.raw_store import build_store
+from app.adapters import shopee_adapter, tiktok_adapter
 
 
 app = FastAPI(title="Multichannel Integration Middleware")
 store = build_store()
 odoo_clients: set[WebSocket] = set()
 odoo_clients_lock = asyncio.Lock()
+
+
+class InventoryUpdate(BaseModel):
+    platform: str
+    external_sku: str
+    synced_qty: float
+
+
+@app.post("/api/outbound/inventory")
+async def sync_inventory_to_platform(payload: InventoryUpdate) -> dict[str, Any]:
+    platform = payload.platform.strip().lower()
+    try:
+        if platform == "shopee":
+            await shopee_adapter.push_inventory(payload.external_sku, payload.synced_qty)
+        elif platform == "tiktok":
+            await tiktok_adapter.push_inventory(payload.external_sku, payload.synced_qty)
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported platform: {platform}")
+        
+        return {"status": "dispatched", "platform": platform, "sku": payload.external_sku, "qty": payload.synced_qty}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
 
 
 def utc_now() -> str:

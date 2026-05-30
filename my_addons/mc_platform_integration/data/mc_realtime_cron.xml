@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_mc_process_incoming_orders" model="ir.cron">
+        <field name="name">MC Process Incoming Orders</field>
+        <field name="model_id" ref="mc_core.model_mc_channel"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_process_incoming_orders()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+
+    <record id="ir_cron_mc_reconcile_order_payment_status" model="ir.cron">
+        <field name="name">MC Reconcile Order Payment Status</field>
+        <field name="model_id" ref="mc_core.model_mc_channel"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_reconcile_order_payment_status()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

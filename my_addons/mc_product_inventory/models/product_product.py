@@ -11,6 +11,12 @@ class ProductProduct(models.Model):
         default=5.0,
         help='Multichannel warning threshold. Compared with Odoo forecasted quantity.',
     )
+    mc_buffer_qty = fields.Float(
+        string='MC Buffer Quantity',
+        digits='Product Unit of Measure',
+        default=0.0,
+        help='Quantity to keep in reserve (safety stock) from channel syncs.',
+    )
     mc_is_low_stock = fields.Boolean(
         string='MC Low Stock',
         compute='_compute_mc_is_low_stock',

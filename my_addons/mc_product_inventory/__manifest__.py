@@ -11,8 +11,8 @@
     'application': False,
     'installable': True,
     'data': [
-        'security/mc_product_inventory_security.xml',
         'security/ir.model.access.csv',
+        'data/mc_stock_cron.xml',
         'views/product_views.xml',
         'views/mc_product_mapping_views.xml',
         'views/menus.xml',

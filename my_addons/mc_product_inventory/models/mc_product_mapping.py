@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class McProductMapping(models.Model):
@@ -18,7 +18,48 @@ class McProductMapping(models.Model):
     channel_code = fields.Selection(related='channel_id.code', readonly=True)
     qty_available = fields.Float(related='product_id.qty_available', string='On Hand', readonly=True)
     virtual_available = fields.Float(related='product_id.virtual_available', string='Forecasted', readonly=True)
+    mc_buffer_qty = fields.Float(related='product_id.mc_buffer_qty', string='Buffer Qty', readonly=True)
+    synced_qty = fields.Float(
+        string='Synced Quantity',
+        compute='_compute_synced_qty',
+        store=False
+    )
+    last_synced_qty = fields.Float(string='Last Synced Qty', default=-1.0, copy=False)
     mc_is_low_stock = fields.Boolean(related='product_id.mc_is_low_stock', string='Low Stock', readonly=True)
+
+    @api.depends('virtual_available', 'mc_buffer_qty')
+    def _compute_synced_qty(self):
+        for mapping in self:
+            safe_qty = mapping.virtual_available - mapping.mc_buffer_qty
+            mapping.synced_qty = max(0.0, safe_qty)
+
+    @api.model
+    def _cron_queue_stock_updates(self, limit=200):
+        # find mappings where synced_qty changed
+        # synced_qty is not stored so we can't search on it directly easily
+        # Instead, search active mappings and compare memory synced_qty vs last_synced_qty
+        mappings = self.search([('is_active', '=', True)], limit=limit)
+        
+        updates_created = 0
+        Queue = self.env['mc.stock.sync.queue']
+        
+        for mapping in mappings:
+            current_qty = mapping.synced_qty
+            if current_qty != mapping.last_synced_qty:
+                # create queue item
+                Queue.create({
+                    'channel_id': mapping.channel_id.id,
+                    'mapping_id': mapping.id,
+                    'qty_to_sync': current_qty,
+                    'state': 'pending'
+                })
+                # update last_synced_qty to prevent duplicate queuing
+                mapping.last_synced_qty = current_qty
+                updates_created += 1
+                
+        if updates_created > 0:
+            import logging
+            logging.getLogger(__name__).info('Queued %d stock sync updates.', updates_created)
 
     _sql_constraints = [
         (

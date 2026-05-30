@@ -5,11 +5,22 @@
         <field name="middleware_channel_key">shopee</field>
         <field name="auto_parse_orders">True</field>
         <field name="auto_check_mapping">True</field>
+        <field name="auto_process_orders">True</field>
+        <field name="auto_reconcile_orders">True</field>
     </record>
     <record id="mc_core.mc_channel_tiktok" model="mc.channel">
         <field name="integration_enabled">True</field>
         <field name="middleware_channel_key">tiktok</field>
         <field name="auto_parse_orders">True</field>
         <field name="auto_check_mapping">True</field>
+        <field name="auto_process_orders">True</field>
+        <field name="auto_reconcile_orders">True</field>
+    </record>
+    <record id="mc_core.mc_channel_manual" model="mc.channel">
+        <field name="integration_enabled">False</field>
+        <field name="auto_parse_orders">False</field>
+        <field name="auto_check_mapping">False</field>
+        <field name="auto_process_orders">False</field>
+        <field name="auto_reconcile_orders">False</field>
     </record>
 </odoo>

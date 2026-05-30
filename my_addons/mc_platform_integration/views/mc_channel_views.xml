@@ -14,6 +14,8 @@
                     <group>
                         <field name="auto_parse_orders"/>
                         <field name="auto_check_mapping"/>
+                        <field name="auto_process_orders"/>
+                        <field name="auto_reconcile_orders"/>
                         <field name="last_realtime_received_at"/>
                     </group>
                 </group>

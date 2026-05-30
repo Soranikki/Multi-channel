@@ -12,6 +12,7 @@
     'installable': True,
     'data': [
         'data/mc_channel_integration_data.xml',
+        'data/mc_realtime_cron.xml',
         'views/mc_channel_views.xml',
         'views/mc_raw_order_views.xml',
     ],
