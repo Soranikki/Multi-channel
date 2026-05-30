@@ -1,0 +1,43 @@
+[
+  {
+    "order_sn": "SHOPEE-1001",
+    "buyer_username": "nguyenvana",
+    "buyer_email": "nguyenvana@example.test",
+    "recipient_address": {
+      "name": "Nguyễn Văn A",
+      "phone": "0901234567",
+      "full_address": "123 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "create_time": "2026-05-05T09:00:00Z",
+    "currency": "VND",
+    "total_amount": 885000,
+    "items": [
+      {
+        "item_sku": "FURN-0789",
+        "item_name": "Bàn làm việc cá nhân",
+        "quantity_purchased": 1,
+        "item_price": 885000
+      }
+    ]
+  },
+  {
+    "order_sn": "SHOPEE-1002",
+    "buyer_username": "tranthib",
+    "recipient_address": {
+      "name": "Trần Thị B",
+      "phone": "0912345678",
+      "full_address": "456 Lê Lợi, Quận 1, TP.HCM"
+    },
+    "create_time": "2026-05-05T09:15:00Z",
+    "currency": "VND",
+    "total_amount": 320000,
+    "items": [
+      {
+        "item_sku": "E-COM07",
+        "item_name": "Tủ lớn",
+        "quantity_purchased": 1,
+        "item_price": 320000
+      }
+    ]
+  }
+]

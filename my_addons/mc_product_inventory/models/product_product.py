@@ -23,10 +23,14 @@ class ProductProduct(models.Model):
             product.mc_is_low_stock = product.virtual_available <= product.mc_low_stock_threshold
 
     def _search_mc_is_low_stock(self, operator, value):
-        products = self.search([]).filtered(
-            lambda product: product.virtual_available <= product.mc_low_stock_threshold
-        )
-        low_stock_ids = products.ids
+        # virtual_available is a computed stock field, not a database column.
+        # search_read keeps the search correct while avoiding full recordset filtering.
+        products = self.search_read([], ['virtual_available', 'mc_low_stock_threshold'])
+        low_stock_ids = [
+            product['id']
+            for product in products
+            if product['virtual_available'] <= product['mc_low_stock_threshold']
+        ]
         if (operator, bool(value)) in [('=', True), ('!=', False)]:
             return [('id', 'in', low_stock_ids)]
         return [('id', 'not in', low_stock_ids)]

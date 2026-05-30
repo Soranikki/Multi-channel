@@ -46,3 +46,11 @@ msgstr "Kênh bán"
 msgid "Settings"
 msgstr "Cài đặt"
 
+
+#. module: mc_core
+msgid "Logs"
+msgstr "Nhật ký"
+
+#. module: mc_core
+msgid "Configuration"
+msgstr "Cấu hình"

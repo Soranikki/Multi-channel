@@ -45,10 +45,32 @@
         </field>
     </record>
 
+    <record id="view_mc_channel_search" model="ir.ui.view">
+        <field name="name">mc.channel.search</field>
+        <field name="model">mc.channel</field>
+        <field name="arch" type="xml">
+            <search string="Search Channels">
+                <field name="name" string="Channel Name"/>
+                <field name="code" string="Platform"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="inactive" string="Archived" domain="[('active','=',False)]"/>
+                <separator/>
+                <filter name="shopee" string="Shopee" domain="[('code','=','shopee')]"/>
+                <filter name="tiktok" string="TikTok" domain="[('code','=','tiktok')]"/>
+                <filter name="manual" string="Manual" domain="[('code','=','manual')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_code" string="Platform" context="{'group_by': 'code'}"/>
+                    <filter name="group_by_status" string="Sync Status" context="{'group_by': 'sync_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id="action_mc_channel" model="ir.actions.act_window">
         <field name="name">Sales Channels</field>
         <field name="res_model">mc.channel</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_mc_channel_search"/>
     </record>
 
     <menuitem id="menu_mc_channels" name="Sales Channels" parent="mc_core.menu_mc_configuration" action="mc_core.action_mc_channel" sequence="10" groups="mc_core.group_mc_manager"/>

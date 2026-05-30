@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mc_raw_order_tree_integration" model="ir.ui.view">
+        <field name="name">mc.raw.order.tree.integration</field>
+        <field name="model">mc.raw.order</field>
+        <field name="inherit_id" ref="mc_sale_order.view_mc_raw_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="mapping_status" widget="badge"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_mc_raw_order_form_integration" model="ir.ui.view">
+        <field name="name">mc.raw.order.form.integration</field>
+        <field name="model">mc.raw.order</field>
+        <field name="inherit_id" ref="mc_sale_order.view_mc_raw_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sale_order_id']" position="after">
+                <field name="integration_event_id"/>
+                <field name="normalized_at"/>
+                <field name="mapping_status" widget="badge"/>
+                <field name="mapped_product_count"/>
+            </xpath>
+            <xpath expr="//notebook/page[field[@name='error_message']]" position="before">
+                <page string="SKU Mapping">
+                    <group>
+                        <field name="mapping_status"/>
+                        <field name="mapped_product_count"/>
+                    </group>
+                    <field name="unmapped_skus" placeholder="Unmapped external SKUs will be listed here."/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_mc_raw_order_search_integration" model="ir.ui.view">
+        <field name="name">mc.raw.order.search.integration</field>
+        <field name="model">mc.raw.order</field>
+        <field name="inherit_id" ref="mc_sale_order.view_mc_raw_order_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='error']" position="after">
+                <filter name="mapped" string="Mapped" domain="[('mapping_status','=','mapped')]"/>
+                <filter name="unmapped" string="Unmapped" domain="[('mapping_status','in',('partial','unmapped'))]"/>
+            </xpath>
+            <xpath expr="//filter[@name='group_state']" position="after">
+                <filter name="group_mapping_status" string="Mapping Status" context="{'group_by': 'mapping_status'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

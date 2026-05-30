@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <menuitem id="menu_mc_root" name="Multichannel Sales" sequence="40" groups="mc_core.group_mc_user"/>
-    <menuitem id="menu_mc_operations" name="Operations" parent="menu_mc_root" sequence="10" groups="mc_core.group_mc_user"/>
     <menuitem id="menu_mc_configuration" name="Configuration" parent="menu_mc_root" sequence="90" groups="mc_core.group_mc_manager"/>
     <menuitem id="menu_mc_logs" name="Logs" parent="menu_mc_root" sequence="80" groups="mc_core.group_mc_user"/>
 </odoo>

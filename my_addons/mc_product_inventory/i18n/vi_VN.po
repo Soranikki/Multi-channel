@@ -3,12 +3,16 @@ msgstr ""
 "Language: vi_VN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: mc_product_inventory
 msgid "Inventory"
 msgstr "Kho hàng"
+
+#. module: mc_product_inventory
+msgid "Product & Inventory"
+msgstr "Sản phẩm & Tồn kho"
 
 #. module: mc_product_inventory
 msgid "Products"
@@ -19,16 +23,24 @@ msgid "Product Mappings"
 msgstr "Sản phẩm Liên kết"
 
 #. module: mc_product_inventory
-msgid "External Product ID"
-msgstr "ID Sản phẩm (Sàn)"
+msgid "Channel SKU Mappings"
+msgstr "Map SKU theo kênh"
 
 #. module: mc_product_inventory
-msgid "External Variant ID"
-msgstr "ID Phân loại (Sàn)"
+msgid "Inventory Adjustments"
+msgstr "Điều chỉnh Tồn kho"
+
+#. module: mc_product_inventory
+msgid "External SKU"
+msgstr "SKU (Sàn)"
+
+#. module: mc_product_inventory
+msgid "External Name"
+msgstr "Tên sản phẩm (Sàn)"
 
 #. module: mc_product_inventory
 msgid "Product"
-msgstr "Sản phẩm (Odoo)"
+msgstr "Sản phẩm"
 
 #. module: mc_product_inventory
 msgid "Multichannel Mappings"
@@ -42,3 +54,14 @@ msgstr "Kênh bán"
 msgid "Platform"
 msgstr "Nền tảng"
 
+#. module: mc_product_inventory
+msgid "MC Low Stock"
+msgstr "Sắp hết hàng"
+
+#. module: mc_product_inventory
+msgid "MC Low Stock Threshold"
+msgstr "Ngưỡng cảnh báo tồn kho"
+
+#. module: mc_product_inventory
+msgid "Channel Mappings"
+msgstr "Liên kết kênh"

@@ -8,7 +8,7 @@
     'version': '17.0.1.0.0',
     'license': 'LGPL-3',
     'depends': ['mc_core', 'stock'],
-    'application': True,
+    'application': False,
     'installable': True,
     'data': [
         'security/mc_product_inventory_security.xml',

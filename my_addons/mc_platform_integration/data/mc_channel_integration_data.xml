@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mc_core.mc_channel_shopee" model="mc.channel">
+        <field name="integration_enabled">True</field>
+        <field name="middleware_channel_key">shopee</field>
+        <field name="auto_parse_orders">True</field>
+        <field name="auto_check_mapping">True</field>
+    </record>
+    <record id="mc_core.mc_channel_tiktok" model="mc.channel">
+        <field name="integration_enabled">True</field>
+        <field name="middleware_channel_key">tiktok</field>
+        <field name="auto_parse_orders">True</field>
+        <field name="auto_check_mapping">True</field>
+    </record>
+</odoo>

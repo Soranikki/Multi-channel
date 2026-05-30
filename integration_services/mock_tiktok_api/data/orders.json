@@ -1,0 +1,46 @@
+[
+  {
+    "id": "TIKTOK-2001",
+    "buyer": {
+      "name": "Lê Văn C",
+      "phone": "0933333333",
+      "email": "levanc@example.test"
+    },
+    "shipping_address": "789 Hai Bà Trưng, Quận 3, TP.HCM",
+    "created_at": "2026-05-06T10:30:00Z",
+    "payment": {
+      "currency": "VND",
+      "total": 750000
+    },
+    "line_items": [
+      {
+        "seller_sku": "FURN-0789",
+        "title": "Bàn làm việc cá nhân",
+        "qty": 1,
+        "sale_price": 750000
+      }
+    ]
+  },
+  {
+    "id": "TIKTOK-2002",
+    "buyer": {
+      "name": "Phạm Thị D",
+      "phone": "0944444444",
+      "email": "phamthid@example.test"
+    },
+    "shipping_address": "12 Nguyễn Trãi, Quận 5, TP.HCM",
+    "created_at": "2026-05-06T10:45:00Z",
+    "payment": {
+      "currency": "VND",
+      "total": 100000
+    },
+    "line_items": [
+      {
+        "seller_sku": "FURN-5555",
+        "title": "Hộp đựng dây cáp",
+        "qty": 1,
+        "sale_price": 100000
+      }
+    ]
+  }
+]

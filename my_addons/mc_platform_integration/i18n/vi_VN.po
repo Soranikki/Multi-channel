@@ -1,0 +1,55 @@
+msgid ""
+msgstr ""
+"Language: vi_VN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. module: mc_platform_integration
+msgid "Realtime Integration"
+msgstr "Tích hợp Realtime"
+
+#. module: mc_platform_integration
+msgid "Realtime Integration Enabled"
+msgstr "Bật tích hợp realtime"
+
+#. module: mc_platform_integration
+msgid "Middleware Channel Key"
+msgstr "Mã kênh middleware"
+
+#. module: mc_platform_integration
+msgid "Auto Parse Incoming Orders"
+msgstr "Tự động phân tích đơn nhận vào"
+
+#. module: mc_platform_integration
+msgid "Auto Check SKU Mapping"
+msgstr "Tự động kiểm tra map SKU"
+
+#. module: mc_platform_integration
+msgid "Last Realtime Event At"
+msgstr "Sự kiện realtime gần nhất"
+
+#. module: mc_platform_integration
+msgid "SKU Mapping Status"
+msgstr "Trạng thái map SKU"
+
+#. module: mc_platform_integration
+msgid "Mapped"
+msgstr "Đã map"
+
+#. module: mc_platform_integration
+msgid "Partially Mapped"
+msgstr "Map một phần"
+
+#. module: mc_platform_integration
+msgid "Unmapped"
+msgstr "Chưa map"
+
+#. module: mc_platform_integration
+msgid "SKU Mapping"
+msgstr "Map SKU"
+
+#. module: mc_platform_integration
+msgid "Unmapped SKUs"
+msgstr "SKU chưa map"

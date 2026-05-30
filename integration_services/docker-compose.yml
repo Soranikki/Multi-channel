@@ -1,0 +1,51 @@
+services:
+  middleware:
+    build: ./middleware
+    container_name: mc-middleware
+    ports:
+      - "8020:8020"
+    environment:
+      EVENT_STORE_DIR: /data
+    volumes:
+      - ./data:/data
+
+  mock-shopee-api:
+    build: ./mock_shopee_api
+    container_name: mc-mock-shopee-api
+    depends_on:
+      - middleware
+    ports:
+      - "8011:8011"
+    environment:
+      MIDDLEWARE_WS_URL: ws://middleware:8020/ws/platform/shopee
+      EVENT_INTERVAL_SECONDS: "2"
+      REPLAY_INTERVAL_SECONDS: "0"
+
+  mock-tiktok-api:
+    build: ./mock_tiktok_api
+    container_name: mc-mock-tiktok-api
+    depends_on:
+      - middleware
+    ports:
+      - "8012:8012"
+    environment:
+      MIDDLEWARE_WS_URL: ws://middleware:8020/ws/platform/tiktok
+      EVENT_INTERVAL_SECONDS: "2"
+      REPLAY_INTERVAL_SECONDS: "0"
+
+  odoo-ws-connector:
+    build: ./odoo_ws_connector
+    container_name: mc-odoo-ws-connector
+    depends_on:
+      - middleware
+    ports:
+      - "8030:8030"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      MIDDLEWARE_WS_URL: ws://middleware:8020/ws/odoo
+      ODOO_URL: ${ODOO_URL:-http://host.docker.internal:8069}
+      ODOO_DB: ${ODOO_DB:-Multi-Channel}
+      ODOO_USERNAME: ${ODOO_USERNAME:-admin}
+      ODOO_PASSWORD: ${ODOO_PASSWORD:-admin}
+      DRY_RUN: ${DRY_RUN:-false}

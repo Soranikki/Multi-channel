@@ -19,9 +19,9 @@ class McSyncLog(models.Model):
     reference = fields.Char(help='External order ID or other identifier related to this log entry.')
     timestamp = fields.Datetime(default=fields.Datetime.now, required=True, index=True)
 
-    @classmethod
-    def _log(cls, env, log_type: str, message: str, channel_id: int | None = None, reference: str | None = None) -> None:
-        env['mc.sync.log'].sudo().create({
+    def _log(self, log_type: str, message: str, channel_id: int | None = None, reference: str | None = None) -> None:
+        """Create a sync log entry. Call via self.env['mc.sync.log']._log(...)"""
+        self.sudo().create({
             'log_type': log_type,
             'message': message,
             'channel_id': channel_id,

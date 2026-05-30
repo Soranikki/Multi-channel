@@ -16,6 +16,7 @@ class McRawOrder(models.Model):
     _description = 'Raw Incoming Order'
     _order = 'received_at desc, id desc'
     _inherit = ['mail.thread']
+    _rec_name = 'external_order_id'
 
     channel_id = fields.Many2one('mc.channel', string='Channel', required=True, ondelete='restrict', index=True, tracking=True)
     external_order_id = fields.Char(string='External Order ID', index=True)
@@ -112,7 +113,6 @@ class McRawOrder(models.Model):
                 'parsed_items_json': json.dumps(parsed['items']),
             })
             self.env['mc.sync.log']._log(
-                self.env,
                 'info',
                 f'Parsed raw order {parsed["external_order_id"]} successfully.',
                 channel_id=self.channel_id.id,
@@ -121,7 +121,7 @@ class McRawOrder(models.Model):
         except Exception as exc:
             message = str(exc)
             self.write({'state': 'error', 'error_message': message})
-            self.env['mc.sync.log']._log(self.env, 'error', f'Parse failed for raw order #{self.id}: {message}', self.channel_id.id, self.external_order_id)
+            self.env['mc.sync.log']._log('error', f'Parse failed for raw order #{self.id}: {message}', self.channel_id.id, self.external_order_id)
             _logger.warning('mc.raw.order parse failed id=%s: %s', self.id, message)
 
     def _process_raw_order(self) -> None:
@@ -137,7 +137,6 @@ class McRawOrder(models.Model):
                 'sale_order_id': sale_order.id,
             })
             self.env['mc.sync.log']._log(
-                self.env,
                 'info',
                 f'Sales order {sale_order.name} created from raw order {self.parsed_external_order_id}.',
                 channel_id=self.channel_id.id,
@@ -146,7 +145,7 @@ class McRawOrder(models.Model):
         except Exception as exc:
             message = str(exc)
             self.write({'state': 'error', 'error_message': message})
-            self.env['mc.sync.log']._log(self.env, 'error', f'Processing failed for raw order #{self.id}: {message}', self.channel_id.id, self.parsed_external_order_id)
+            self.env['mc.sync.log']._log('error', f'Processing failed for raw order #{self.id}: {message}', self.channel_id.id, self.parsed_external_order_id)
             _logger.warning('mc.raw.order process failed id=%s: %s', self.id, message)
 
     def _create_sale_order_from_raw(self):
@@ -195,20 +194,27 @@ class McRawOrder(models.Model):
 
     def _find_or_create_partner(self):
         Partner = self.env['res.partner']
-        domain = []
+        # 1. Try email (most reliable dedup key)
         if self.parsed_customer_email:
-            domain = [('email', '=', self.parsed_customer_email)]
-        elif self.parsed_customer_phone:
-            domain = [('phone', '=', self.parsed_customer_phone)]
-        if domain:
-            partner = Partner.search(domain, limit=1)
+            partner = Partner.search([('email', '=', self.parsed_customer_email)], limit=1)
+            if partner:
+                return partner
+        # 2. Try phone
+        if self.parsed_customer_phone:
+            partner = Partner.search([('phone', '=', self.parsed_customer_phone)], limit=1)
+            if partner:
+                return partner
+        # 3. Try name (prevent duplicate contacts for same-named customers)
+        customer_name = self.parsed_customer_name or f'Customer {self.parsed_external_order_id}'
+        if self.parsed_customer_name:
+            partner = Partner.search([('name', '=', customer_name), ('customer_rank', '>', 0)], limit=1)
             if partner:
                 return partner
         return Partner.create({
-            'name': self.parsed_customer_name or f'Customer {self.parsed_external_order_id}',
-            'phone': self.parsed_customer_phone,
-            'email': self.parsed_customer_email,
-            'street': self.parsed_shipping_address,
+            'name': customer_name,
+            'phone': self.parsed_customer_phone or False,
+            'email': self.parsed_customer_email or False,
+            'street': self.parsed_shipping_address or False,
             'customer_rank': 1,
         })
 
