@@ -14,6 +14,7 @@ SEED_CONFIGS: dict[str, dict] = {
             "currency": "currency",
         },
         "items_root": "items",
+        "orders_endpoint": "http://mock-shopee-api:8011/orders",
         "item_mappings": {
             "external_sku": "item_sku",
             "product_name": "item_name",
@@ -41,6 +42,7 @@ SEED_CONFIGS: dict[str, dict] = {
             "currency": "payment.currency",
         },
         "items_root": "line_items",
+        "orders_endpoint": "http://mock-tiktok-api:8012/orders",
         "item_mappings": {
             "external_sku": "seller_sku",
             "product_name": "title",

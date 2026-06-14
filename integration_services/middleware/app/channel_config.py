@@ -16,6 +16,7 @@ class ChannelConfig(BaseModel):
     field_mappings: dict[str, str]
     items_root: str
     item_mappings: dict[str, str]
+    orders_endpoint: str | None = None
     inventory_endpoint: InventoryEndpoint | None = None
 
 

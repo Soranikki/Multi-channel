@@ -1,13 +1,17 @@
-# Week 7-8 Realtime Integration Services
+# Realtime Integration Services
 
-This folder contains services outside Odoo. They simulate Shopee/TikTok realtime APIs, normalize platform-specific order payloads in a middleware, then forward clean orders to Odoo.
+This folder contains services outside Odoo. They simulate Shopee/TikTok public integration behavior: platform webhooks notify the middleware, middleware normalizes platform-specific order payloads, then forwards clean orders to Odoo through an internal connector.
 
 ## Architecture
 
 ```text
-mock-shopee-api  --WebSocket--> middleware --WebSocket--> odoo-ws-connector --XML-RPC--> Odoo
-mock-tiktok-api  --WebSocket----^
+mock-shopee-api  --HTTP Webhook--> middleware --WebSocket internal--> odoo-ws-connector --XML-RPC--> Odoo
+mock-tiktok-api  --HTTP Webhook----^
 ```
+
+External platform communication uses HTTP webhook + REST API. WebSocket is only used inside the private service network between middleware and the Odoo connector.
+
+Middleware stores integration events in a dedicated PostgreSQL database (`mc_integration`) managed by the `integration-postgres` container. Odoo business data remains in the separate Odoo PostgreSQL database and is only modified through XML-RPC/ORM.
 
 ## Start
 
@@ -47,12 +51,29 @@ curl http://localhost:8030/health
 ```bash
 curl http://localhost:8020/raw-events
 curl http://localhost:8020/normalized-events
+curl http://localhost:8020/api/events
+curl http://localhost:8020/api/events/pending
+```
+
+Inspect the integration event store directly:
+
+```bash
+docker exec mc-integration-postgres psql -U mc_integration -d mc_integration \
+  -c "SELECT event_id, platform, external_order_id, status FROM integration_events ORDER BY received_at DESC LIMIT 10;"
+```
+
+Trigger a platform backfill from the mock REST API:
+
+```bash
+curl -X POST 'http://localhost:8020/api/backfill/shopee?limit=10'
+curl -X POST 'http://localhost:8020/api/backfill/tiktok?limit=10'
 ```
 
 ## Demo Goal
 
-- Week 7: show raw Shopee/TikTok events received by middleware through WebSocket.
-- Week 8: show normalized orders pushed to Odoo and stored as `mc.raw.order`, with SKU mapping status checked automatically.
+- Show raw Shopee/TikTok events received by middleware through signed HTTP webhooks.
+- Show normalized orders stored in a durable middleware event store before being pushed to Odoo.
+- Show normalized orders pushed to Odoo and stored as `mc.raw.order`, with SKU mapping status checked automatically.
 
 If Odoo credentials are not ready, set `DRY_RUN=true` in `.env`. The connector will still receive realtime events and print them without writing to Odoo.
 

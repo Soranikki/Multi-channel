@@ -44,6 +44,7 @@ async def consume_normalized_events() -> None:
         try:
             async with websockets.connect(middleware_url) as websocket:
                 status.update({"connected_to_middleware": True, "last_error": None})
+                await drain_pending_events()
                 async for message in websocket:
                     event = json.loads(message)
                     await handle_event(websocket, event)
@@ -53,12 +54,11 @@ async def consume_normalized_events() -> None:
             await asyncio.sleep(3)
 
 
-async def handle_event(websocket, event: dict[str, Any]) -> None:
+async def ingest_event(event: dict[str, Any]) -> dict[str, Any]:
     event_type = event.get("event_type")
     event_id = event.get("event_id")
     if event_type != "normalized_order.ready":
-        await websocket.send(json.dumps({"event_type": "connector.ack", "received_at": utc_now()}))
-        return
+        return {"event_type": "connector.ack", "received_at": utc_now()}
 
     status.update({"received_events": status["received_events"] + 1, "last_event_id": event_id})
     payload = dict(event.get("payload") or {})
@@ -72,11 +72,40 @@ async def handle_event(websocket, event: dict[str, Any]) -> None:
             result = odoo.ingest_normalized_order(payload)
         status.update({"ingested_events": status["ingested_events"] + 1, "last_result": result, "last_error": None})
         print(f"[OdooConnector] ingested {event_id}: {result}")
-        await websocket.send(json.dumps({"event_type": "connector.ack", "event_id": event_id, "result": result}, ensure_ascii=False))
+        return {"event_type": "connector.ack", "event_id": event_id, "result": result}
     except Exception as exc:
         status.update({"last_error": str(exc)})
         print(f"[OdooConnector] failed {event_id}: {exc}")
-        await websocket.send(json.dumps({"event_type": "connector.nack", "event_id": event_id, "error": str(exc)}, ensure_ascii=False))
+        return {"event_type": "connector.nack", "event_id": event_id, "error": str(exc)}
+
+
+async def handle_event(websocket, event: dict[str, Any]) -> None:
+    result = await ingest_event(event)
+    await websocket.send(json.dumps(result, ensure_ascii=False))
+
+
+async def drain_pending_events() -> None:
+    middleware_url = os.getenv("MIDDLEWARE_URL", "http://middleware:8020").rstrip("/")
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{middleware_url}/api/events/pending", timeout=10.0)
+            resp.raise_for_status()
+            for event in resp.json():
+                result = await ingest_event(event)
+                event_id = result.get("event_id")
+                if not event_id:
+                    continue
+                if result.get("event_type") == "connector.ack":
+                    await client.post(f"{middleware_url}/api/events/{event_id}/ack", timeout=10.0)
+                else:
+                    await client.post(
+                        f"{middleware_url}/api/events/{event_id}/fail",
+                        json={"error": result.get("error") or "Connector failed"},
+                        timeout=10.0,
+                    )
+    except Exception as exc:
+        status.update({"last_error": str(exc)})
+        print(f"[OdooConnector] failed to drain pending middleware events: {exc}")
 
 
 async def poll_outbound_stock_syncs() -> None:
@@ -89,22 +118,27 @@ async def poll_outbound_stock_syncs() -> None:
                     done_ids = []
                     async with httpx.AsyncClient() as client:
                         for record in records:
-                            channel_code = record.get("channel_code")
-                            if not channel_code:
-                                done_ids.append(record["id"])
-                                continue
-                            
-                            payload = {
-                                "platform": channel_code,
-                                "external_sku": record.get("external_sku"),
-                                "synced_qty": record.get("qty_to_sync", 0.0)
-                            }
-                            resp = await client.post(middleware_api, json=payload, timeout=10.0)
-                            if resp.status_code in (200, 201):
-                                done_ids.append(record["id"])
-                                status["outbound_syncs_processed"] += 1
-                            else:
-                                print(f"[OdooConnector] Outbound sync failed for {record['id']}: {resp.text}")
+                            try:
+                                channel_code = record.get("channel_code")
+                                if not channel_code:
+                                    odoo.mark_stock_sync_failed(record["id"], "Missing channel code")
+                                    continue
+                                
+                                payload = {
+                                    "platform": channel_code,
+                                    "external_sku": record.get("external_sku"),
+                                    "synced_qty": record.get("qty_to_sync", 0.0)
+                                }
+                                resp = await client.post(middleware_api, json=payload, timeout=10.0)
+                                if resp.status_code in (200, 201):
+                                    done_ids.append(record["id"])
+                                    status["outbound_syncs_processed"] += 1
+                                else:
+                                    error = f"Middleware returned {resp.status_code}: {resp.text}"
+                                    print(f"[OdooConnector] Outbound sync failed for {record['id']}: {error}")
+                                    odoo.mark_stock_sync_failed(record["id"], error)
+                            except Exception as exc:
+                                odoo.mark_stock_sync_failed(record["id"], str(exc))
                     
                     if done_ids:
                         odoo.mark_stock_sync_done(done_ids)

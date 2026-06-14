@@ -37,29 +37,15 @@ class OdooRpcClient:
         if not self.uid:
             self.authenticate()
         models = xmlrpc.client.ServerProxy(f"{self.url}/xmlrpc/2/object")
-        records = models.execute_kw(
+        return models.execute_kw(
             self.db,
             self.uid,
             self.password,
             "mc.stock.sync.queue",
-            "search_read",
-            [[["state", "=", "pending"]]],
-            {"fields": ["id", "external_sku", "qty_to_sync", "channel_id"], "limit": 50}
+            "claim_pending_for_connector",
+            [],
+            {"limit": 50},
         )
-        # We need the channel_code from channel_id
-        if records:
-            channel_ids = list({r["channel_id"][0] for r in records if r.get("channel_id")})
-            channels = models.execute_kw(
-                self.db, self.uid, self.password,
-                "mc.channel", "search_read",
-                [[["id", "in", channel_ids]]],
-                {"fields": ["id", "code"]}
-            )
-            channel_map = {c["id"]: c["code"] for c in channels}
-            for r in records:
-                if r.get("channel_id"):
-                    r["channel_code"] = channel_map.get(r["channel_id"][0])
-        return records
 
     def mark_stock_sync_done(self, sync_ids: list[int]) -> bool:
         if not sync_ids:
@@ -72,7 +58,19 @@ class OdooRpcClient:
             self.uid,
             self.password,
             "mc.stock.sync.queue",
-            "write",
-            [sync_ids, {"state": "done"}]
+            "mark_done_from_connector",
+            [sync_ids]
         )
 
+    def mark_stock_sync_failed(self, sync_id: int, error: str) -> bool:
+        if not self.uid:
+            self.authenticate()
+        models = xmlrpc.client.ServerProxy(f"{self.url}/xmlrpc/2/object")
+        return models.execute_kw(
+            self.db,
+            self.uid,
+            self.password,
+            "mc.stock.sync.queue",
+            "mark_failed_from_connector",
+            [[sync_id], error],
+        )

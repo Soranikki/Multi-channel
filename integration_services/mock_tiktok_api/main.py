@@ -1,18 +1,20 @@
 import asyncio
+import hashlib
+import hmac
 import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import websockets
+import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 
 app = FastAPI(title="Mock TikTok Shop API")
 orders_path = Path(__file__).parent / "data" / "orders.json"
-status: dict[str, Any] = {"connected": False, "sent_events": 0, "last_ack": None, "last_error": None}
+status: dict[str, Any] = {"webhook_enabled": True, "sent_events": 0, "last_ack": None, "last_error": None}
 
 # In-memory inventory store for mock platform
 _inventory_store: dict[str, float] = {}
@@ -29,15 +31,20 @@ def load_orders() -> list[dict[str, Any]]:
     return json.loads(orders_path.read_text(encoding="utf-8"))
 
 
-async def stream_orders() -> None:
-    middleware_url = os.getenv("MIDDLEWARE_WS_URL", "ws://middleware:8020/ws/platform/tiktok")
+def sign_payload(timestamp: str, body: bytes) -> str:
+    secret = os.getenv("WEBHOOK_SECRET_TIKTOK", os.getenv("WEBHOOK_SECRET", "dev-webhook-secret"))
+    digest = hmac.new(secret.encode(), timestamp.encode() + b"." + body, hashlib.sha256).hexdigest()
+    return f"sha256={digest}"
+
+
+async def send_order_webhooks() -> None:
+    middleware_url = os.getenv("MIDDLEWARE_WEBHOOK_URL", "http://middleware:8020/webhook/tiktok")
     interval = float(os.getenv("EVENT_INTERVAL_SECONDS", "2"))
     replay_interval = float(os.getenv("REPLAY_INTERVAL_SECONDS", "0"))
     while True:
         try:
-            async with websockets.connect(middleware_url) as websocket:
-                status.update({"connected": True, "last_error": None})
-                await websocket.recv()  # connected message
+            async with httpx.AsyncClient() as client:
+                status.update({"last_error": None})
                 while True:
                     for index, order in enumerate(load_orders(), start=1):
                         event = {
@@ -47,8 +54,16 @@ async def stream_orders() -> None:
                             "sent_at": utc_now(),
                             "payload": order,
                         }
-                        await websocket.send(json.dumps(event, ensure_ascii=False))
-                        ack = await websocket.recv()
+                        body = json.dumps(event, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                        timestamp = utc_now()
+                        headers = {
+                            "Content-Type": "application/json",
+                            "X-MC-Timestamp": timestamp,
+                            "X-MC-Signature": sign_payload(timestamp, body),
+                        }
+                        resp = await client.post(middleware_url, content=body, headers=headers, timeout=10.0)
+                        resp.raise_for_status()
+                        ack = resp.text
                         status.update({"sent_events": status["sent_events"] + 1, "last_ack": ack})
                         print(f"[TikTok] sent event #{index}: {order['id']} -> {ack}")
                         await asyncio.sleep(interval)
@@ -57,14 +72,14 @@ async def stream_orders() -> None:
                     else:
                         await asyncio.sleep(replay_interval)
         except Exception as exc:
-            status.update({"connected": False, "last_error": str(exc)})
-            print(f"[TikTok] websocket disconnected: {exc}")
+            status.update({"last_error": str(exc)})
+            print(f"[TikTok] webhook dispatch failed: {exc}")
             await asyncio.sleep(3)
 
 
 @app.on_event("startup")
 async def startup() -> None:
-    asyncio.create_task(stream_orders())
+    asyncio.create_task(send_order_webhooks())
 
 
 @app.get("/health")

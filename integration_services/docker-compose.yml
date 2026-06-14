@@ -1,11 +1,33 @@
 services:
+  integration-postgres:
+    image: postgres:16-alpine
+    container_name: mc-integration-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: mc_integration
+      POSTGRES_USER: mc_integration
+      POSTGRES_PASSWORD: mc_integration
+    volumes:
+      - integration_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mc_integration -d mc_integration"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   middleware:
     build: ./middleware
     container_name: mc-middleware
+    depends_on:
+      integration-postgres:
+        condition: service_healthy
     ports:
       - "8020:8020"
     environment:
       EVENT_STORE_DIR: /data
+      EVENT_DATABASE_URL: ${EVENT_DATABASE_URL:-postgresql://mc_integration:mc_integration@integration-postgres:5432/mc_integration}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-webhook-secret}
     volumes:
       - ./data:/data
 
@@ -17,7 +39,8 @@ services:
     ports:
       - "8011:8011"
     environment:
-      MIDDLEWARE_WS_URL: ws://middleware:8020/ws/platform/shopee
+      MIDDLEWARE_WEBHOOK_URL: http://middleware:8020/webhook/shopee
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-webhook-secret}
       EVENT_INTERVAL_SECONDS: "2"
       REPLAY_INTERVAL_SECONDS: "0"
 
@@ -29,7 +52,8 @@ services:
     ports:
       - "8012:8012"
     environment:
-      MIDDLEWARE_WS_URL: ws://middleware:8020/ws/platform/tiktok
+      MIDDLEWARE_WEBHOOK_URL: http://middleware:8020/webhook/tiktok
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev-webhook-secret}
       EVENT_INTERVAL_SECONDS: "2"
       REPLAY_INTERVAL_SECONDS: "0"
 
@@ -49,3 +73,6 @@ services:
       ODOO_USERNAME: ${ODOO_USERNAME:-admin}
       ODOO_PASSWORD: ${ODOO_PASSWORD:-admin}
       DRY_RUN: ${DRY_RUN:-false}
+
+volumes:
+  integration_postgres_data:

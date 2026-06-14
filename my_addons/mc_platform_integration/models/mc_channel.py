@@ -22,7 +22,7 @@ class McChannel(models.Model):
     last_realtime_received_at = fields.Datetime(string='Last Realtime Event At', readonly=True)
     middleware_config_json = fields.Text(
         string='Archived Middleware Config (JSON)',
-        help='Snapshot of the middleware channel config, saved when the channel is archived. Restored if the channel is reactivated.',
+        help='Snapshot of the middleware channel config, saved when the channel is hard-deleted for later restoration.',
         readonly=True, copy=False,
     )
 
@@ -40,16 +40,16 @@ class McChannel(models.Model):
         url = f"{base_url}{path}"
         try:
             if method == 'GET':
-                resp = requests.get(url, timeout=(3.0, 5.0))
+                resp = requests.get(url, timeout=5.0)
             elif method == 'POST':
-                resp = requests.post(url, json=json_body or {}, timeout=(3.0, 5.0))
+                resp = requests.post(url, json=json_body or {}, timeout=5.0)
             else:
                 return None
             if resp.status_code >= 500:
                 _logger.warning("Connector API %s returned %s: %s", url, resp.status_code, resp.text)
                 return None
             return resp.json() if resp.content else {}
-        except requests.RequestException as exc:
+        except Exception as exc:
             _logger.warning("Cannot reach odoo_ws_connector at %s: %s", url, exc)
             return None
 
@@ -62,46 +62,26 @@ class McChannel(models.Model):
     def _archive_cleanup(self):
         self.ensure_one()
         result = self._call_connector_api('POST', f'/api/channel/{self.code}/archive')
-        if result and result.get('snapshot'):
-            return result['snapshot']
-        return None
+        if result is None:
+            return None  # API call failed (connector unreachable)
+        # API succeeded — snapshot may be None if already archived, that's fine
+        return result.get('snapshot') or {}
 
-    def _restore_middleware_config(self):
-        self.ensure_one()
-        if not self.middleware_config_json:
-            return
-        try:
-            snapshot = json.loads(self.middleware_config_json)
-        except (json.JSONDecodeError, TypeError):
-            _logger.warning("Invalid middleware_config_json for channel %s, cannot restore.", self.code)
-            return
-        self._call_connector_api(
-            'POST',
-            f'/api/channel/{self.code}/reactivate',
-            json_body={'snapshot': snapshot},
-        )
+    def _check_connectivity(self):
+        result = self._call_connector_api('GET', '/health')
+        if result and result.get('connected_to_middleware'):
+            return True
+        return False
 
     def write(self, vals):
         if 'active' in vals:
             if vals.get('active') is False:
-                # ARCHIVE
                 vals['integration_enabled'] = False
-                result = super().write(vals)
-                for channel in self:
-                    snapshot = channel._archive_cleanup()
-                    if snapshot:
-                        channel.write({'middleware_config_json': json.dumps(snapshot)})
-                return result
+                vals['sync_status'] = 'idle'
             elif vals.get('active') is True:
-                # REACTIVATE
-                for channel in self:
-                    if channel.middleware_config_json:
-                        channel._restore_middleware_config()
-                result = super().write(vals)
-                for channel in self:
-                    if channel.middleware_config_json:
-                        channel.write({'middleware_config_json': False})
-                return result
+                vals['integration_enabled'] = True
+                vals['sync_status'] = 'success' if self._check_connectivity() else 'error'
+                vals['last_sync_at'] = fields.Datetime.now()
         return super().write(vals)
 
     def unlink(self):

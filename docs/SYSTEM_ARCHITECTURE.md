@@ -1,7 +1,7 @@
 # Hệ thống Đa kênh — Kiến trúc & Vận hành
 
 > **Multi-channel E-commerce Integration System**  
-> Thesis — Odoo 17 | Python 3.10+ | Docker | WebSocket | XML-RPC
+> Thesis — Odoo 17 | Python 3.10+ | Docker | Webhook | WebSocket nội bộ | XML-RPC
 
 ---
 
@@ -25,7 +25,11 @@
 
 ## 1. Tổng quan hệ thống
 
-Hệ thống tích hợp bán hàng đa kênh (Multi-channel), cho phép Odoo nhận đơn hàng realtime từ các sàn thương mại điện tử (Shopee, TikTok Shop) qua WebSocket, xử lý qua pipeline tự động (parse → map → process → reconcile), và đồng bộ tồn kho ngược lại sàn.
+Hệ thống tích hợp bán hàng đa kênh (Multi-channel), cho phép Odoo nhận đơn hàng gần thời gian thực từ các sàn thương mại điện tử (Shopee, TikTok Shop) qua webhook HTTP, xử lý qua pipeline tự động (parse → map → process → reconcile), và đồng bộ tồn kho ngược lại sàn qua REST API.
+
+Thiết kế tách rõ hai boundary:
+- **External platform boundary**: Shopee/TikTok Shop dùng webhook HTTP + REST API, đúng mô hình public API của sàn thương mại điện tử.
+- **Internal service boundary**: Middleware và Odoo connector dùng WebSocket nội bộ để push event nhanh trong private Docker network. WebSocket không dùng để kết nối trực tiếp với API sàn.
 
 ### Repository structure
 
@@ -38,8 +42,8 @@ Multi-channel/
 │   ├── mc_platform_integration/  #   Tích hợp realtime platform
 │   └── multichannel_sync/        #   Legacy (không active)
 ├── integration_services/         # Docker services
-│   ├── mock_shopee_api/          #   Mock Shopee WebSocket + REST
-│   ├── mock_tiktok_api/          #   Mock TikTok Shop WebSocket + REST
+│   ├── mock_shopee_api/          #   Mock Shopee Webhook sender + REST
+│   ├── mock_tiktok_api/          #   Mock TikTok Shop Webhook sender + REST
 │   ├── middleware/               #   Middleware normalization + routing
 │   └── odoo_ws_connector/        #   Connector Odoo ↔ Middleware
 ├── conf/odoo.conf                # Odoo configuration
@@ -53,7 +57,8 @@ Multi-channel/
 | ERP | Odoo 17 Community |
 | Python | 3.10+ |
 | Database | PostgreSQL |
-| WebSocket | `websockets` (Python) |
+| Webhook | HTTP POST + HMAC signature |
+| WebSocket nội bộ | `websockets` (Python) |
 | REST API | FastAPI + Uvicorn |
 | XML-RPC | `xmlrpc.client` (Python) |
 | Docker | Docker Compose |
@@ -71,20 +76,23 @@ Multi-channel/
 │  ┌───────────────────┐          ┌─────────────────────┐                 │
 │  │  Mock Shopee API  │          │  Mock TikTok API    │                 │
 │  │  (port 8011)      │          │  (port 8012)        │                 │
-│  │  WebSocket Client │──────────│  WebSocket Client   │                 │
-│  │  + REST Server    │   WS     │  + REST Server      │                 │
+│  │  Webhook Sender   │──────────│  Webhook Sender     │                 │
+│  │  + REST Server    │ HTTP POST│  + REST Server      │                 │
 │  └────────┬──────────┘          └──────────┬──────────┘                 │
 │           │                                │                            │
 │           └──────────┬─────────────────────┘                            │
-│                      │ WS (platform events)                             │
+│                      │ HTTP Webhook (platform events)                   │
 │                      ▼                                                  │
 │  ┌──────────────────────────────────────────────┐                       │
 │  │           MIDDLEWARE (port 8020)             │                       │
-│  │  • WS endpoint: /ws/platform/{platform}      │                       │
+│  │  • Webhook: POST /webhook/{platform}         │                       │
 │  │  • WS endpoint: /ws/odoo                     │                       │ 
+│  │  • REST: GET /api/events/pending             │                       │
+│  │  • REST: POST /api/events/{id}/ack|fail      │                       │
+│  │  • REST: POST /api/backfill/{platform}       │                       │
 │  │  • REST: POST /api/outbound/inventory        │                       │
 │  │  • Normalizer: platform raw → canonical      │                       │
-│  │  • Event store (file-based)                  │                       │
+│  │  • Event store: JSONL audit + PostgreSQL DB  │                       │
 │  └─────────────────┬────────────────────────────┘                       │
 │                    │ WS (normalized events)                             │
 │                    ▼                                                    │
@@ -134,6 +142,58 @@ Multi-channel/
 │  └──────────────────────────────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
+
+### 2.1 Lý do chọn Webhook ngoài + WebSocket nội bộ
+
+Shopee Open Platform và TikTok Shop Partner API không cung cấp WebSocket public cho phần mềm bên thứ ba. Cơ chế thực tế là webhook HTTP để thông báo sự kiện và REST API để lấy/chỉnh dữ liệu chi tiết. Vì vậy boundary bên ngoài của hệ thống dùng `POST /webhook/{platform}` và mô phỏng chữ ký HMAC bằng các header:
+
+```text
+X-MC-Timestamp
+X-MC-Signature: sha256=<hmac_sha256(secret, timestamp + "." + raw_body)>
+```
+
+WebSocket chỉ được dùng giữa middleware và Odoo connector vì đây là private network do hệ thống kiểm soát. Số lượng kết nối ít, không mở ra Internet, và phù hợp để push event normalized sang connector với độ trễ thấp.
+
+WebSocket nội bộ không phải nguồn dữ liệu duy nhất. Trước khi push, middleware đã ghi event vào durable event store PostgreSQL trong database `mc_integration`. Nếu connector hoặc Odoo bị ngắt, event vẫn ở trạng thái `queued`/`failed`; khi connector reconnect, nó gọi `GET /api/events/pending` để drain lại event.
+
+### 2.2 Lý do tách PostgreSQL Integration DB riêng
+
+Odoo sử dụng PostgreSQL cho dữ liệu nghiệp vụ. Middleware cũng sử dụng PostgreSQL, nhưng tách thành database riêng `mc_integration` để lưu dữ liệu hạ tầng tích hợp:
+
+```text
+PostgreSQL
+├── Odoo business DB: Multi-Channel
+│   ├── sale_order
+│   ├── mc_raw_order
+│   ├── mc_channel
+│   └── product/stock/accounting tables
+│
+└── Integration DB: mc_integration
+    └── integration_events
+```
+
+Lý do thiết kế:
+- **Tách ownership dữ liệu**: Odoo sở hữu business data; middleware sở hữu integration event state.
+- **Không ghi trực tiếp vào bảng nghiệp vụ Odoo**: tạo đơn, cập nhật tồn kho, mapping SKU vẫn đi qua Odoo ORM/XML-RPC để giữ business rules, constraints và security.
+- **Production-ready hơn SQLite**: PostgreSQL hỗ trợ concurrent writes, JSONB, index, backup, transaction và dễ mở rộng khi middleware có nhiều worker.
+- **Dễ bảo vệ kiến trúc**: dữ liệu event/retry/dead-letter là concern của middleware, không làm bẩn schema nghiệp vụ Odoo.
+
+`integration_events` lưu: `event_id`, `platform`, `external_order_id`, `raw_payload`, `normalized_event`, `status`, `attempt_count`, `last_error`, `next_retry_at`, `delivered_at`.
+
+Status chính:
+
+```text
+queued → delivered
+queued/failed → failed → dead_letter
+```
+
+Nếu middleware restart, event vẫn nằm trong PostgreSQL. Nếu connector/Odoo down, event giữ trạng thái `queued` hoặc `failed` và được connector drain lại qua `GET /api/events/pending`.
+
+Polling vẫn cần thiết để đảm bảo nhất quán cuối cùng:
+- Backfill polling: `POST /api/backfill/{platform}` lấy lại đơn từ REST API mock platform.
+- Retry polling: event `failed` được retry theo backoff.
+- Reconciliation cron: Odoo định kỳ đối soát trạng thái thanh toán/đơn hàng.
+- Outbound stock polling: connector poll `mc.stock.sync.queue` để đẩy tồn kho ra middleware/sàn.
 
 ---
 
@@ -363,7 +423,7 @@ services:
 **Endpoints:**
 | Method | Path | Mục đích |
 |---|---|---|
-| WS | `/ws/platform/{platform}` | Nhận raw events từ platform |
+| POST | `/webhook/{platform}` | Nhận webhook events từ platform |
 | WS | `/ws/odoo` | Gửi normalized events đến Odoo |
 | POST | `/api/outbound/inventory` | Nhận stock update từ Odoo → push đến platform |
 | GET | `/raw-events` | Xem raw events đã lưu |
@@ -656,7 +716,7 @@ result = models.execute_kw(db, uid, password, "mc.channel",
 ### 8.2 WebSocket — Real-time Communication
 
 ```
-Platform → Middleware:  /ws/platform/{platform}   (unidirectional events)
+Platform → Middleware:  POST /webhook/{platform}   (webhook events)
 Middleware → Odoo:      /ws/odoo                   (bidirectional ACK)
 ```
 
@@ -831,7 +891,7 @@ admin_passwd = <hashed_password>
 
 | Service | Variable | Default | Mục đích |
 |---|---|---|---|
-| mock-shopee-api | `MIDDLEWARE_WS_URL` | ws://middleware:8020/ws/platform/shopee | Kết nối đến middleware |
+| mock-shopee-api | `MIDDLEWARE_WEBHOOK_URL` | http://middleware:8020/webhook/shopee | Gửi webhook đến middleware |
 | mock-shopee-api | `EVENT_INTERVAL_SECONDS` | 2 | Giãn cách giữa các event |
 | mock-shopee-api | `REPLAY_INTERVAL_SECONDS` | 0 | Lặp lại (0 = không) |
 | mock-tiktok-api | (same structure) | — | — |

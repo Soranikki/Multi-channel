@@ -21,6 +21,7 @@ def normalize_event(platform: str, event: dict[str, Any]) -> dict[str, Any]:
         config.items_root,
         config.item_mappings,
     )
+    normalized["channel_code"] = platform
     if not normalized.get("external_order_id"):
         raise ValueError("Normalized order is missing external_order_id")
     if not normalized.get("items"):
