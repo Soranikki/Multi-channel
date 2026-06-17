@@ -1,0 +1,129 @@
+.mc-dashboard-container {
+    padding: 24px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    height: 100%;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1f2937;
+
+    .mc-badge-connected {
+        background-color: #f0fdf4;
+        color: #166534;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .mc-dot-green {
+        width: 8px;
+        height: 8px;
+        background-color: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .mc-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &.mc-card-alert {
+            background: linear-gradient(135deg, #fff 0%, #fef2f2 100%);
+        }
+    }
+
+    .mc-card-title {
+        letter-spacing: 0.5px;
+    }
+
+    .mc-trend {
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 6px;
+
+        &.mc-trend-up {
+            color: #10b981;
+            background-color: #ecfdf5;
+        }
+        &.mc-trend-down {
+            color: #ef4444;
+            background-color: #fef2f2;
+        }
+        &.mc-trend-neutral {
+            color: #6b7280;
+            background-color: #f3f4f6;
+        }
+    }
+
+    .mc-doughnut-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+    }
+
+    .mc-legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    .mc-table {
+        th {
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 12px;
+        }
+        td {
+            border-bottom: 1px solid #f9fafb;
+            padding: 12px 0;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+    }
+
+    .mc-badge-qty {
+        background-color: #fee2e2;
+        color: #ef4444;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .mc-error-item {
+        background-color: #f8fafc;
+        border: 1px solid #f1f5f9;
+        
+        .mc-error-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #fee2e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        
+        .mc-error-msg {
+            background-color: #f1f5f9;
+        }
+    }
+}

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mc_dashboard.MainDashboard" owl="1">
+        <div class="mc-dashboard-container">
+            <!-- Header -->
+            <div class="mc-header d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-0 fw-bold">Tổng quan Sức khỏe Kinh doanh</h2>
+                    <small class="text-muted">Hệ thống đồng bộ: OmniSync | Cập nhật lúc: <t t-esc="state.updateTime"/></small>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <t t-foreach="state.data.channel_status" t-as="channel" t-key="channel.name">
+                        <div class="mc-badge-connected">
+                            <span class="mc-dot-green"></span> <t t-esc="channel.name"/> Connected
+                        </div>
+                    </t>
+                    <div class="mc-date-picker dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-calendar me-2"></i> <t t-esc="state.currentDateLabel"/>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow border-0 mc-dropdown-menu" style="min-width: 280px; border-radius: 12px; padding: 12px 0;">
+                            <a class="dropdown-item py-2" t-att-class="state.dateFilter == 'today' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('today', 'Hôm nay')">Hôm nay</a>
+                            <a class="dropdown-item py-2" t-att-class="state.dateFilter == '7d' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('7d', '7 ngày qua')">7 ngày qua</a>
+                            <a class="dropdown-item py-2" t-att-class="state.dateFilter == '30d' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('30d', '30 ngày qua')">30 ngày qua</a>
+                            <a class="dropdown-item py-2" t-att-class="state.dateFilter == '1y' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('1y', '1 năm qua')">1 năm qua</a>
+                            
+                            <div class="dropdown-divider my-2"></div>
+                            
+                            <div class="px-3 py-2">
+                                <label class="text-muted small fw-bold text-uppercase mb-2">Tùy Chỉnh</label>
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <input type="date" class="form-control form-control-sm" t-model="state.customStartDate"/>
+                                    <span class="text-muted">-</span>
+                                    <input type="date" class="form-control form-control-sm" t-model="state.customEndDate"/>
+                                </div>
+                                <button class="btn btn-dark w-100 rounded-3" t-on-click="applyCustomDate">Áp dụng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <t t-if="!state.data or !state.data.kpis">
+                <div class="text-center p-5">
+                    <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+                </div>
+            </t>
+            <t t-else="">
+                <!-- Level 1: KPIs -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md">
+                        <div class="mc-card">
+                            <p class="mc-card-title text-uppercase text-muted small fw-bold mb-2">Tổng Doanh Thu</p>
+                            <h3 class="fw-bold mb-3"><t t-esc="state.data.kpis.total_revenue"/> đ</h3>
+                            <div class="mc-trend mc-trend-up"><i class="fa fa-arrow-up"></i> 12% vs kỳ trước</div>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="mc-card">
+                            <p class="mc-card-title text-uppercase text-muted small fw-bold mb-2">Tổng Số Đơn</p>
+                            <h3 class="fw-bold mb-3"><t t-esc="state.data.kpis.total_orders"/></h3>
+                            <div class="mc-trend mc-trend-up"><i class="fa fa-arrow-up"></i> 5.4% vs kỳ trước</div>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="mc-card">
+                            <p class="mc-card-title text-uppercase text-muted small fw-bold mb-2">Giá Trị TB/Đơn (AOV)</p>
+                            <h3 class="fw-bold mb-3"><t t-esc="state.data.kpis.aov"/> đ</h3>
+                            <div class="mc-trend mc-trend-neutral"><i class="fa fa-minus"></i> 0% Ổn định</div>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="mc-card">
+                            <p class="mc-card-title text-uppercase text-muted small fw-bold mb-2">Tỷ Lệ Hủy/Hoàn</p>
+                            <h3 class="fw-bold mb-3"><t t-esc="state.data.kpis.cancel_rate"/></h3>
+                            <div class="mc-trend mc-trend-down"><i class="fa fa-arrow-up"></i> 1.1% TikTok cao hơn</div>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="mc-card mc-card-alert">
+                            <p class="mc-card-title text-uppercase text-muted small fw-bold mb-2 text-danger">Lỗi Đồng Bộ (Queue)</p>
+                            <h3 class="fw-bold mb-3 text-danger"><t t-esc="state.data.kpis.sync_errors"/> jobs</h3>
+                            <a href="#" class="text-primary text-decoration-none small">Xem chi tiết queue →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <div class="mc-card h-100">
+                            <h5 class="fw-bold mb-1">Biến động Doanh thu (30 Ngày)</h5>
+                            <p class="text-muted small mb-4">So sánh hiệu quả giữa các kênh bán</p>
+                            <div class="chart-container" style="height: 300px; position: relative;">
+                                <canvas t-ref="trendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mc-card h-100">
+                            <h5 class="fw-bold mb-1">Tỷ trọng Doanh thu</h5>
+                            <p class="text-muted small mb-4">Đóng góp từ nền tảng</p>
+                            <div class="chart-container d-flex flex-column justify-content-center align-items-center" style="height: 250px; position: relative;">
+                                <div class="mc-doughnut-center">
+                                    <h3 class="fw-bold mb-0"><t t-esc="state.data.kpis.total_revenue"/></h3>
+                                    <small class="text-muted text-uppercase fw-bold" style="font-size: 10px;">Tổng Cộng</small>
+                                </div>
+                                <canvas t-ref="doughnutChart"></canvas>
+                            </div>
+                            <div class="mc-custom-legend mt-4">
+                                <t t-foreach="state.data.revenue_by_channel" t-as="ch" t-key="ch.name">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <span class="mc-legend-dot" t-attf-style="background-color: {{ch.color}};"></span>
+                                            <span class="text-muted"><t t-esc="ch.name"/></span>
+                                        </div>
+                                        <div class="fw-bold">
+                                            <t t-esc="ch.value_str"/> <span class="text-muted fw-normal" style="font-size: 12px;">(<t t-esc="ch.percentage"/>)</span>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="mc-card h-100">
+                            <h5 class="fw-bold mb-1">Trạng thái Đơn hàng</h5>
+                            <p class="text-muted small mb-4">Phân bổ luồng xử lý đơn</p>
+                            <div class="chart-container" style="height: 250px; position: relative;">
+                                <canvas t-ref="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mc-card h-100">
+                            <h5 class="fw-bold mb-1">Top 5 Sản phẩm Bán chạy</h5>
+                            <p class="text-muted small mb-4">Tổng hợp đa kênh</p>
+                            <div class="chart-container" style="height: 250px; position: relative;">
+                                <canvas t-ref="topProductChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="mc-card h-100">
+                            <h5 class="fw-bold mb-1"><i class="fa fa-cubes text-warning me-2"></i> Cảnh báo Tồn kho (Low Stock)</h5>
+                            <p class="text-muted small mb-4">Các mặt hàng dưới ngưỡng an toàn (Buffer Qty)</p>
+                            
+                            <table class="table table-borderless mc-table">
+                                <thead class="text-muted small text-uppercase">
+                                    <tr>
+                                        <th>Mã SKU / Tên SP</th>
+                                        <th class="text-center">Tồn Kho</th>
+                                        <th class="text-end">Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.low_stock" t-as="item" t-key="item.sku">
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold"><t t-esc="item.sku"/></div>
+                                                <small class="text-muted"><t t-esc="item.name"/></small>
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                <span class="mc-badge-qty"><t t-esc="item.qty"/></span>
+                                            </td>
+                                            <td class="text-end align-middle">
+                                                <t t-if="item.status == 'CẦN NHẬP NGAY'">
+                                                    <span class="badge bg-danger rounded-pill px-3 py-2"><t t-esc="item.status"/></span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><t t-esc="item.status"/></span>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mc-card h-100">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="fw-bold mb-1"><i class="fa fa-server text-danger me-2"></i> Hàng đợi Lỗi (Failed Sync)</h5>
+                                    <p class="text-muted small mb-4">Lệnh đồng bộ tồn kho thất bại (mc.stock.sync.queue)</p>
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3">Retry All</button>
+                            </div>
+                            
+                            <div class="mc-error-list">
+                                <t t-foreach="state.data.failed_syncs" t-as="err" t-key="err.id">
+                                    <div class="mc-error-item mb-3 p-3 rounded d-flex gap-3 align-items-start">
+                                        <div class="mc-error-icon">
+                                            <i class="fa fa-times text-danger"></i>
+                                        </div>
+                                        <div class="w-100">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="fw-bold">Push Stock <i class="fa fa-arrow-right text-muted mx-1"></i> <t t-esc="err.channel"/></span>
+                                                <span class="text-muted small"><t t-esc="err.time"/></span>
+                                            </div>
+                                            <div class="mc-error-msg my-2 p-2 rounded text-muted small font-monospace">
+                                                Err: <t t-esc="err.error"/>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">SKU: <t t-esc="err.sku"/> | Qty: <t t-esc="err.qty"/></small>
+                                                <a href="#" class="text-primary text-decoration-none small">Retry</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
