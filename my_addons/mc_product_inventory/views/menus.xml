@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_mc_product_inventory" name="Product &amp; Inventory" parent="mc_core.menu_mc_root" sequence="20" groups="mc_core.group_mc_user"/>
-    <menuitem id="menu_mc_products" name="Products" parent="mc_product_inventory.menu_mc_product_inventory" action="product.product_normal_action" sequence="10" groups="mc_core.group_mc_user"/>
-    <menuitem id="menu_mc_product_mappings" name="Channel SKU Mappings" parent="mc_product_inventory.menu_mc_product_inventory" action="mc_product_inventory.action_mc_product_mapping" sequence="20" groups="mc_core.group_mc_user"/>
-    <menuitem id="menu_mc_inventory_adjustments" name="Inventory Adjustments" parent="mc_product_inventory.menu_mc_product_inventory" action="stock.action_view_inventory_tree" sequence="30" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_product_inventory" name="Sản phẩm &amp; Tồn kho" parent="mc_core.menu_mc_root" sequence="20" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_products" name="Sản phẩm" parent="mc_product_inventory.menu_mc_product_inventory" action="product.product_normal_action" sequence="10" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_product_mappings" name="Đồng bộ sản phẩm" parent="mc_product_inventory.menu_mc_product_inventory" action="mc_product_inventory.action_mc_product_mapping" sequence="20" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_inventory_adjustments" name="Điều chỉnh tồn kho" parent="mc_product_inventory.menu_mc_product_inventory" action="stock.action_view_inventory_tree" sequence="30" groups="mc_core.group_mc_user"/>
 </odoo>

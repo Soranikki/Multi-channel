@@ -7,25 +7,25 @@ class McProductMapping(models.Model):
     _description = 'Product Channel Mapping'
     _order = 'channel_id, external_sku'
 
-    channel_id = fields.Many2one('mc.channel', string='Channel', required=True, ondelete='cascade', index=True)
-    product_id = fields.Many2one('product.product', string='Odoo Product Variant', required=True, ondelete='cascade', index=True)
-    external_sku = fields.Char(string='External SKU', required=True, index=True)
-    external_name = fields.Char(string='External Product Name')
-    is_active = fields.Boolean(default=True)
+    channel_id = fields.Many2one('mc.channel', string="Kênh bán", required=True, ondelete='cascade', index=True)
+    product_id = fields.Many2one('product.product', string="Sản phẩm Odoo", required=True, ondelete='cascade', index=True)
+    external_sku = fields.Char(string="SKU (Sàn)", required=True, index=True)
+    external_name = fields.Char(string="Tên SP (Sàn)")
+    is_active = fields.Boolean(string='Đang hoạt động', default=True)
 
-    internal_sku = fields.Char(related='product_id.default_code', string='Internal Reference', readonly=True)
-    product_name = fields.Char(related='product_id.display_name', string='Product', readonly=True)
-    channel_code = fields.Char(related='channel_id.code', string='Channel Code', readonly=True)
-    qty_available = fields.Float(related='product_id.qty_available', string='On Hand', readonly=True)
-    virtual_available = fields.Float(related='product_id.virtual_available', string='Forecasted', readonly=True)
-    mc_buffer_qty = fields.Float(related='product_id.mc_buffer_qty', string='Buffer Qty', readonly=True)
+    internal_sku = fields.Char(related='product_id.default_code', string="Mã nội bộ", readonly=True)
+    product_name = fields.Char(related='product_id.display_name', string="Sản phẩm", readonly=True)
+    channel_code = fields.Char(related='channel_id.code', string='Mã kênh', readonly=True)
+    qty_available = fields.Float(related='product_id.qty_available', string="Tồn kho", readonly=True)
+    virtual_available = fields.Float(related='product_id.virtual_available', string="Dự báo", readonly=True)
+    mc_buffer_qty = fields.Float(related='product_id.mc_buffer_qty', string="Tồn kho dự phòng", readonly=True)
     synced_qty = fields.Float(
-        string='Synced Quantity',
+        string="SL đã đồng bộ",
         compute='_compute_synced_qty',
         store=False
     )
-    last_synced_qty = fields.Float(string='Last Synced Qty', default=-1.0, copy=False)
-    mc_is_low_stock = fields.Boolean(related='product_id.mc_is_low_stock', string='Low Stock', readonly=True)
+    last_synced_qty = fields.Float(string="SL đồng bộ lần cuối", default=-1.0, copy=False)
+    mc_is_low_stock = fields.Boolean(related='product_id.mc_is_low_stock', string="Sắp hết hàng", readonly=True)
 
     @api.depends('virtual_available', 'mc_buffer_qty')
     def _compute_synced_qty(self):
@@ -68,3 +68,8 @@ class McProductMapping(models.Model):
             'This external SKU is already mapped to a product on this channel.',
         ),
     ]
+
+    @api.model
+    def action_queue_stock_updates(self, limit=200):
+        self._cron_queue_stock_updates(limit=limit)
+        return True

@@ -6,7 +6,7 @@ class ProductProduct(models.Model):
     _inherit = 'product.product'
 
     mc_low_stock_threshold = fields.Float(
-        string='MC Low Stock Threshold',
+        string="Ngưỡng cảnh báo Tồn kho MC",
         digits='Product Unit of Measure',
         default=5.0,
         help='Multichannel warning threshold. Compared with Odoo forecasted quantity.',
@@ -18,7 +18,7 @@ class ProductProduct(models.Model):
         help='Quantity to keep in reserve (safety stock) from channel syncs.',
     )
     mc_is_low_stock = fields.Boolean(
-        string='MC Low Stock',
+        string="Sắp hết hàng MC",
         compute='_compute_mc_is_low_stock',
         search='_search_mc_is_low_stock',
     )

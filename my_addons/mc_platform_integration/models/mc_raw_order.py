@@ -9,59 +9,59 @@ class McRawOrder(models.Model):
     _inherit = 'mc.raw.order'
 
     CANONICAL_ORDER_STATUS = [
-        ('unknown', 'Unknown'),
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
-        ('shipping', 'Shipping'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled'),
-        ('refunded', 'Refunded'),
+        ('unknown', 'Không rõ'),
+        ('pending', 'Chờ xử lý'),
+        ('confirmed', 'Đã xác nhận'),
+        ('shipping', 'Đang giao'),
+        ('delivered', 'Đã giao'),
+        ('cancelled', 'Đã hủy'),
+        ('refunded', 'Đã hoàn tiền'),
     ]
     CANONICAL_PAYMENT_STATUS = [
-        ('unknown', 'Unknown'),
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('failed', 'Failed'),
-        ('refunded', 'Refunded'),
+        ('unknown', 'Không rõ'),
+        ('pending', 'Chờ xử lý'),
+        ('paid', 'Đã thanh toán'),
+        ('failed', 'Thất bại'),
+        ('refunded', 'Đã hoàn tiền'),
     ]
 
-    integration_event_id = fields.Char(string='Integration Event ID', readonly=True, copy=False, index=True)
-    normalized_at = fields.Datetime(string='Normalized At', readonly=True, copy=False)
-    platform_order_status = fields.Char(string='Platform Order Status', readonly=True, copy=False)
-    platform_payment_status = fields.Char(string='Platform Payment Status', readonly=True, copy=False)
-    platform_status_updated_at = fields.Datetime(string='Platform Status Updated At', readonly=True, copy=False, index=True)
-    canonical_order_status = fields.Selection(selection=CANONICAL_ORDER_STATUS, string='Canonical Order Status', default='unknown', readonly=True, copy=False, index=True)
-    canonical_payment_status = fields.Selection(selection=CANONICAL_PAYMENT_STATUS, string='Canonical Payment Status', default='unknown', readonly=True, copy=False, index=True)
+    integration_event_id = fields.Char(string="Mã sự kiện tích hợp", readonly=True, copy=False, index=True)
+    normalized_at = fields.Datetime(string="Thời gian chuẩn hóa", readonly=True, copy=False)
+    platform_order_status = fields.Char(string="Trạng thái đơn hàng (Sàn)", readonly=True, copy=False)
+    platform_payment_status = fields.Char(string="Trạng thái thanh toán (Sàn)", readonly=True, copy=False)
+    platform_status_updated_at = fields.Datetime(string="Thời gian cập nhật trạng thái (Sàn)", readonly=True, copy=False, index=True)
+    canonical_order_status = fields.Selection(selection=CANONICAL_ORDER_STATUS, string="Trạng thái Đơn hàng", default='unknown', readonly=True, copy=False, index=True)
+    canonical_payment_status = fields.Selection(selection=CANONICAL_PAYMENT_STATUS, string="Trạng thái Thanh toán", default='unknown', readonly=True, copy=False, index=True)
     mapping_status = fields.Selection(
         selection=[
-            ('unchecked', 'Unchecked'),
-            ('mapped', 'Mapped'),
-            ('partial', 'Partially Mapped'),
-            ('unmapped', 'Unmapped'),
+            ('unchecked', 'Chưa kiểm tra'),
+            ('mapped', 'Đã map'),
+            ('partial', 'Map một phần'),
+            ('unmapped', 'Chưa map'),
         ],
-        string='SKU Mapping Status',
+        string="Trạng thái Map SKU",
         default='unchecked',
         readonly=True,
         copy=False,
         index=True,
     )
-    mapped_product_count = fields.Integer(string='Mapped Product Count', readonly=True, copy=False)
-    unmapped_skus = fields.Text(string='Unmapped SKUs', readonly=True, copy=False)
+    mapped_product_count = fields.Integer(string="Số SP đã map", readonly=True, copy=False)
+    unmapped_skus = fields.Text(string="Các SKU chưa map", readonly=True, copy=False)
     reconcile_state = fields.Selection(
         selection=[
-            ('unchecked', 'Unchecked'),
-            ('matched', 'Matched'),
-            ('mismatched', 'Mismatched'),
-            ('skipped', 'Skipped'),
+            ('unchecked', 'Chưa kiểm tra'),
+            ('matched', 'Khớp'),
+            ('mismatched', 'Lệch'),
+            ('skipped', 'Bỏ qua'),
         ],
-        string='Reconciliation State',
+        string="Trạng thái Đối soát",
         default='unchecked',
         readonly=True,
         copy=False,
         index=True,
     )
-    reconcile_message = fields.Text(string='Reconciliation Message', readonly=True, copy=False)
-    reconciled_at = fields.Datetime(string='Reconciled At', readonly=True, copy=False)
+    reconcile_message = fields.Text(string="Thông báo đối soát", readonly=True, copy=False)
+    reconciled_at = fields.Datetime(string="Thời gian đối soát", readonly=True, copy=False)
 
     @api.model
     def _prepare_integration_vals_from_payload(self, payload: dict, integration_event_id=False, normalized_at=False) -> dict:

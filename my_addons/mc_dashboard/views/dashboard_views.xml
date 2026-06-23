@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="action_mc_dashboard" model="ir.actions.client">
-        <field name="name">Overview</field>
+        <field name="name">Dashboard Kinh doanh</field>
         <field name="tag">mc_dashboard.main</field>
     </record>
 </odoo>

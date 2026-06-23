@@ -6,22 +6,22 @@
         <field name="name">mc.raw.order.search</field>
         <field name="model">mc.raw.order</field>
         <field name="arch" type="xml">
-            <search string="Search Raw Orders">
+            <search string="Tìm kiếm Đơn hàng gốc">
                 <field name="external_order_id"/>
                 <field name="parsed_customer_name"/>
                 <field name="channel_id"/>
-                <filter name="state_new"       string="New"       domain="[('state','=','new')]"/>
-                <filter name="state_parsed"    string="Parsed"    domain="[('state','=','parsed')]"/>
-                <filter name="state_processed" string="Processed" domain="[('state','=','processed')]"/>
-                <filter name="state_error"     string="Error"     domain="[('state','=','error')]"/>
+                <filter name="state_new"       string="Mới"       domain="[('state','=','new')]"/>
+                <filter name="state_parsed"    string="Đã phân tích"    domain="[('state','=','parsed')]"/>
+                <filter name="state_processed" string="Đã xử lý" domain="[('state','=','processed')]"/>
+                <filter name="state_error"     string="Lỗi"     domain="[('state','=','error')]"/>
                 <separator/>
-                <filter name="today" string="Today"
+                <filter name="today" string="Hôm nay"
                     domain="[('received_at','&gt;=',(context_today()).strftime('%Y-%m-%d'))]"/>
                 <separator/>
-                <group expand="1" string="Group By">
-                    <filter name="group_channel" string="Channel"    context="{'group_by': 'channel_id'}"/>
-                    <filter name="group_state"   string="State"      context="{'group_by': 'state'}"/>
-                    <filter name="group_date"    string="Received"   context="{'group_by': 'received_at:day'}"/>
+                <group expand="1" string="Nhóm theo">
+                    <filter name="group_channel" string="Kênh bán"    context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_state"   string="Trạng thái"      context="{'group_by': 'state'}"/>
+                    <filter name="group_date"    string="Thời gian nhận"   context="{'group_by': 'received_at:day'}"/>
                 </group>
             </search>
         </field>
@@ -32,7 +32,7 @@
         <field name="name">mc.raw.order.tree</field>
         <field name="model">mc.raw.order</field>
         <field name="arch" type="xml">
-            <tree string="Raw Orders"
+            <tree string="Đơn hàng gốc"
                 decoration-danger="state == 'error'"
                 decoration-success="state == 'processed'"
                 decoration-info="state == 'parsed'"
@@ -44,9 +44,9 @@
                     decoration-danger="state == 'error'"
                     decoration-success="state == 'processed'"
                     decoration-info="state == 'parsed'"/>
-                <field name="parsed_customer_name" string="Customer"/>
-                <field name="parsed_total_amount" string="Amount"/>
-                <field name="parsed_currency" string="Currency"/>
+                <field name="parsed_customer_name" string="Khách hàng"/>
+                <field name="parsed_total_amount" string="Tổng tiền"/>
+                <field name="parsed_currency" string="Tiền tệ"/>
                 <field name="parsed_at" optional="show"/>
                 <field name="processed_at" optional="show"/>
             </tree>
@@ -58,15 +58,15 @@
         <field name="name">mc.raw.order.form</field>
         <field name="model">mc.raw.order</field>
         <field name="arch" type="xml">
-            <form string="Raw Order">
+            <form string="Đơn hàng gốc">
                 <header>
                     <button name="action_parse"
-                        string="Parse"
+                        string="Phân tích"
                         type="object"
                         class="btn-primary"
                         invisible="state not in ('new', 'error')"/>
                     <button name="action_reprocess"
-                        string="Reprocess"
+                        string="Xử lý lại"
                         type="object"
                         class="btn-warning"
                         invisible="state != 'error'"
@@ -91,7 +91,7 @@
                     </div>
 
                     <div class="oe_title">
-                        <label for="external_order_id" string="External Order ID"/>
+                        <label for="external_order_id" string="Mã đơn hàng (Sàn)"/>
                         <h1>
                             <field name="external_order_id"
                                 placeholder="(populated after parsing)"
@@ -100,13 +100,13 @@
                     </div>
 
                     <group>
-                        <group string="Source">
+                        <group string="Nguồn">
                             <field name="channel_id"/>
                             <field name="received_at" readonly="1"/>
                             <field name="parsed_at" readonly="1"/>
                             <field name="processed_at" readonly="1"/>
                         </group>
-                        <group string="Parsed Customer Info" invisible="state == 'new'">
+                        <group string="TT Khách hàng" invisible="state == 'new'">
                             <field name="parsed_customer_name" readonly="1"/>
                             <field name="parsed_customer_phone" readonly="1"/>
                             <field name="parsed_shipping_address" readonly="1"/>
@@ -125,12 +125,12 @@
                     </group>
 
                     <notebook>
-                        <page string="Raw Payload" name="raw_payload">
+                        <page string="Dữ liệu thô" name="raw_payload">
                             <field name="raw_payload"
                                 readonly="1"
                                 nolabel="1"/>
                         </page>
-                        <page string="Parsed Items" name="parsed_items"
+                        <page string="SP phân tích" name="parsed_items"
                             invisible="state == 'new'">
                             <field name="parsed_items_json" readonly="1" nolabel="1"/>
                         </page>
@@ -146,7 +146,7 @@
 
     <!-- ── Window actions ─────────────────────────────────────────────── -->
     <record id="action_mc_raw_order" model="ir.actions.act_window">
-        <field name="name">Raw Orders</field>
+        <field name="name">Đơn hàng gốc</field>
         <field name="res_model">mc.raw.order</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_mc_raw_order_search"/>
@@ -164,7 +164,7 @@
 
     <!-- Pre-filtered to errors only -->
     <record id="action_mc_raw_order_errors" model="ir.actions.act_window">
-        <field name="name">Raw Order Errors</field>
+        <field name="name">Lỗi đơn hàng gốc</field>
         <field name="res_model">mc.raw.order</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_mc_raw_order_search"/>
@@ -174,7 +174,7 @@
 
     <!-- Server action: Parse All New — accessible from Action menu in list -->
     <record id="action_mc_raw_order_parse_all" model="ir.actions.server">
-        <field name="name">Parse All New Raw Orders</field>
+        <field name="name">Phân tích tất cả đơn mới</field>
         <field name="model_id" ref="model_mc_raw_order"/>
         <field name="binding_model_id" ref="model_mc_raw_order"/>
         <field name="binding_view_types">list</field>
@@ -186,7 +186,7 @@ records.action_parse_all_new()
 
     <!-- Server action: Reprocess Errors — accessible from Action menu in list -->
     <record id="action_mc_raw_order_reprocess" model="ir.actions.server">
-        <field name="name">Reprocess Selected Errors</field>
+        <field name="name">Xử lý lại các lỗi đã chọn</field>
         <field name="model_id" ref="model_mc_raw_order"/>
         <field name="binding_model_id" ref="model_mc_raw_order"/>
         <field name="binding_view_types">list</field>

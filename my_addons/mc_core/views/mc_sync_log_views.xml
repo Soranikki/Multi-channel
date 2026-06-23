@@ -4,7 +4,7 @@
         <field name="name">mc.sync.log.search</field>
         <field name="model">mc.sync.log</field>
         <field name="arch" type="xml">
-            <search string="Sync Logs">
+            <search string="Lịch sử đồng bộ">
                 <field name="channel_id"/>
                 <field name="reference"/>
                 <filter name="errors" string="Errors" domain="[('log_type','=','error')]"/>
@@ -21,7 +21,7 @@
         <field name="name">mc.sync.log.tree</field>
         <field name="model">mc.sync.log</field>
         <field name="arch" type="xml">
-            <tree string="Sync Logs" create="false" edit="false" delete="false" decoration-danger="log_type == 'error'" decoration-warning="log_type == 'warning'">
+            <tree string="Lịch sử đồng bộ" create="false" edit="false" delete="false" decoration-danger="log_type == 'error'" decoration-warning="log_type == 'warning'">
                 <field name="timestamp"/>
                 <field name="channel_id"/>
                 <field name="log_type" widget="badge"/>
@@ -50,11 +50,11 @@
     </record>
 
     <record id="action_mc_sync_log" model="ir.actions.act_window">
-        <field name="name">Sync Logs</field>
+        <field name="name">Lịch sử đồng bộ</field>
         <field name="res_model">mc.sync.log</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_mc_sync_log_search"/>
     </record>
 
-    <menuitem id="menu_mc_sync_log" name="All Sync Logs" parent="mc_core.menu_mc_logs" action="mc_core.action_mc_sync_log" sequence="10" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_sync_log" name="All Lịch sử đồng bộ" parent="mc_core.menu_mc_logs" action="mc_core.action_mc_sync_log" sequence="10" groups="mc_core.group_mc_user"/>
 </odoo>

@@ -20,32 +20,33 @@ class McRawOrder(models.Model):
     _inherit = ['mail.thread']
     _rec_name = 'external_order_id'
 
-    channel_id = fields.Many2one('mc.channel', string='Channel', required=True, ondelete='restrict', index=True, tracking=True)
-    external_order_id = fields.Char(string='External Order ID', index=True)
-    raw_payload = fields.Text(string='Raw Payload (JSON)', required=True)
+    channel_id = fields.Many2one('mc.channel', string="Kênh bán", required=True, ondelete='restrict', index=True, tracking=True)
+    external_order_id = fields.Char(string="Mã đơn hàng (Sàn)", index=True)
+    raw_payload = fields.Text(string="Dữ liệu thô (JSON)", required=True)
     state = fields.Selection(
-        selection=[('new', 'New'), ('parsed', 'Parsed'), ('processed', 'Processed'), ('error', 'Error')],
+        string='Trạng thái',
+        selection=[('new', 'Mới'), ('parsed', 'Đã phân tích'), ('processed', 'Đã xử lý'), ('error', 'Lỗi')],
         default='new',
         required=True,
         index=True,
         tracking=True,
     )
-    error_message = fields.Text(readonly=True)
-    received_at = fields.Datetime(default=fields.Datetime.now, required=True, readonly=True)
-    parsed_at = fields.Datetime(readonly=True)
-    processed_at = fields.Datetime(readonly=True)
+    error_message = fields.Text(string='Thông báo lỗi', readonly=True)
+    received_at = fields.Datetime(string='Thời gian nhận', default=fields.Datetime.now, required=True, readonly=True)
+    parsed_at = fields.Datetime(string='Thời gian phân tích', readonly=True)
+    processed_at = fields.Datetime(string='Thời gian xử lý', readonly=True)
 
-    parsed_external_order_id = fields.Char(string='Parsed Order ID', readonly=True)
-    parsed_customer_name = fields.Char(string='Customer Name', readonly=True)
-    parsed_customer_phone = fields.Char(string='Customer Phone', readonly=True)
-    parsed_customer_email = fields.Char(string='Customer Email', readonly=True)
-    parsed_shipping_address = fields.Char(string='Shipping Address', readonly=True)
-    parsed_order_date = fields.Datetime(string='Order Date', readonly=True)
-    parsed_total_amount = fields.Float(string='Total Amount', digits=(12, 2), readonly=True)
-    parsed_currency = fields.Char(string='Currency', readonly=True)
-    parsed_items_json = fields.Text(string='Parsed Items (JSON)', readonly=True)
+    parsed_external_order_id = fields.Char(string="Mã đơn hàng phân tích", readonly=True)
+    parsed_customer_name = fields.Char(string="Tên khách hàng", readonly=True)
+    parsed_customer_phone = fields.Char(string="Số điện thoại", readonly=True)
+    parsed_customer_email = fields.Char(string="Email khách hàng", readonly=True)
+    parsed_shipping_address = fields.Char(string="Địa chỉ giao hàng", readonly=True)
+    parsed_order_date = fields.Datetime(string="Ngày đặt hàng", readonly=True)
+    parsed_total_amount = fields.Float(string="Tổng tiền", digits=(12, 2), readonly=True)
+    parsed_currency = fields.Char(string="Tiền tệ", readonly=True)
+    parsed_items_json = fields.Text(string="Sản phẩm phân tích (JSON)", readonly=True)
 
-    sale_order_id = fields.Many2one('sale.order', string='Resulting Sales Order', readonly=True, ondelete='set null')
+    sale_order_id = fields.Many2one('sale.order', string="Đơn bán hàng tạo ra", readonly=True, ondelete='set null')
 
     _sql_constraints = [
         (
@@ -58,10 +59,12 @@ class McRawOrder(models.Model):
     def action_parse(self):
         for record in self.filtered(lambda raw: raw.state in ('new', 'error')):
             record._parse_raw_order()
+        return True
 
     def action_process(self):
         for record in self.filtered(lambda raw: raw.state == 'parsed'):
             record._process_raw_order()
+        return True
 
     def action_reprocess(self):
         records = self.filtered(lambda raw: raw.state == 'error')
@@ -337,3 +340,4 @@ class McRawOrder(models.Model):
         except (TypeError, ValueError):
             _logger.warning('Order %s has invalid order_date %r, defaulting to now()', order_id, raw)
             return fields.Datetime.now()
+

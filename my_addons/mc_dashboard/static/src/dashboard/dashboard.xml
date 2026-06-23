@@ -11,7 +11,7 @@
                 <div class="d-flex align-items-center gap-3">
                     <t t-foreach="state.data.channel_status" t-as="channel" t-key="channel.name">
                         <div class="mc-badge-connected">
-                            <span class="mc-dot-green"></span> <t t-esc="channel.name"/> Connected
+                            <span class="mc-dot-green"></span> Đã kết nối <t t-esc="channel.name"/>
                         </div>
                     </t>
                     <div class="mc-date-picker dropdown">

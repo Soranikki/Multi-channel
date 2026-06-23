@@ -4,7 +4,7 @@
         <field name="name">mc.channel.tree</field>
         <field name="model">mc.channel</field>
         <field name="arch" type="xml">
-            <tree string="Sales Channels" decoration-muted="active == False">
+            <tree string="Kênh bán hàng" decoration-muted="active == False">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
@@ -71,11 +71,11 @@
     </record>
 
     <record id="action_mc_channel" model="ir.actions.act_window">
-        <field name="name">Sales Channels</field>
+        <field name="name">Kênh bán hàng</field>
         <field name="res_model">mc.channel</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_mc_channel_search"/>
     </record>
 
-    <menuitem id="menu_mc_channels" name="Sales Channels" parent="mc_core.menu_mc_configuration" action="mc_core.action_mc_channel" sequence="10" groups="mc_core.group_mc_manager"/>
+    <menuitem id="menu_mc_channels" name="Kênh bán hàng" parent="mc_core.menu_mc_configuration" action="mc_core.action_mc_channel" sequence="10" groups="mc_core.group_mc_manager"/>
 </odoo>

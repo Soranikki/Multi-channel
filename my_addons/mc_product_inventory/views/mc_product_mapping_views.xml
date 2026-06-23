@@ -4,16 +4,16 @@
         <field name="name">mc.product.mapping.search</field>
         <field name="model">mc.product.mapping</field>
         <field name="arch" type="xml">
-            <search string="Product Mappings">
+            <search string="Đồng bộ sản phẩm">
                 <field name="external_sku"/>
                 <field name="external_name"/>
                 <field name="product_id"/>
                 <field name="channel_id"/>
-                <filter name="active" string="Active" domain="[('is_active','=',True)]"/>
-                <filter name="inactive" string="Inactive" domain="[('is_active','=',False)]"/>
-                <group expand="0" string="Group By">
-                    <filter name="group_channel" string="Channel" context="{'group_by': 'channel_id'}"/>
-                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                <filter name="active" string="Hoạt động" domain="[('is_active','=',True)]"/>
+                <filter name="inactive" string="Ngừng hoạt động" domain="[('is_active','=',False)]"/>
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_channel" string="Kênh bán" context="{'group_by': 'channel_id'}"/>
+                    <filter name="group_product" string="Sản phẩm" context="{'group_by': 'product_id'}"/>
                 </group>
             </search>
         </field>
@@ -23,7 +23,7 @@
         <field name="name">mc.product.mapping.tree</field>
         <field name="model">mc.product.mapping</field>
         <field name="arch" type="xml">
-            <tree string="Product Mappings" editable="bottom" decoration-muted="is_active == False" decoration-danger="mc_is_low_stock == True">
+            <tree string="Đồng bộ sản phẩm" editable="bottom" decoration-muted="is_active == False" decoration-danger="mc_is_low_stock == True">
                 <field name="channel_id"/>
                 <field name="external_sku"/>
                 <field name="external_name"/>
@@ -41,22 +41,22 @@
         <field name="name">mc.product.mapping.form</field>
         <field name="model">mc.product.mapping</field>
         <field name="arch" type="xml">
-            <form string="Product Mapping">
+            <form string="Đồng bộ sản phẩm">
                 <sheet>
                     <group>
-                        <group string="Channel">
+                        <group string="Kênh bán">
                             <field name="channel_id"/>
                             <field name="channel_code" readonly="1"/>
                             <field name="is_active"/>
                         </group>
-                        <group string="Product">
+                        <group string="Sản phẩm">
                             <field name="product_id"/>
                             <field name="internal_sku" readonly="1"/>
                             <field name="qty_available" readonly="1"/>
                             <field name="virtual_available" readonly="1"/>
                         </group>
                     </group>
-                    <group string="External Platform">
+                    <group string="Nền tảng bên ngoài">
                         <field name="external_sku"/>
                         <field name="external_name"/>
                     </group>
@@ -66,7 +66,7 @@
     </record>
 
     <record id="action_mc_product_mapping" model="ir.actions.act_window">
-        <field name="name">Product Mappings</field>
+        <field name="name">Đồng bộ sản phẩm</field>
         <field name="res_model">mc.product.mapping</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_mc_product_mapping_search"/>

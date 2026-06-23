@@ -4,7 +4,7 @@
         <field name="name">mc.integration.service.tree</field>
         <field name="model">mc.integration.service</field>
         <field name="arch" type="xml">
-            <tree string="Integration Services">
+            <tree string="Dịch vụ tích hợp">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
@@ -43,7 +43,7 @@
         <field name="name">mc.integration.service.search</field>
         <field name="model">mc.integration.service</field>
         <field name="arch" type="xml">
-            <search string="Integration Services">
+            <search string="Dịch vụ tích hợp">
                 <field name="name"/>
                 <field name="code"/>
                 <filter name="active" string="Active" domain="[('active','=',True)]"/>
@@ -53,7 +53,7 @@
     </record>
 
     <record id="action_mc_integration_service" model="ir.actions.act_window">
-        <field name="name">Integration Services</field>
+        <field name="name">Dịch vụ tích hợp</field>
         <field name="res_model">mc.integration.service</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_mc_integration_service_search"/>
@@ -63,7 +63,7 @@
         </field>
     </record>
 
-    <menuitem id="menu_mc_integration_service" name="Integration Services"
+    <menuitem id="menu_mc_integration_service" name="Dịch vụ tích hợp"
               parent="menu_mc_configuration" sequence="50"
               action="action_mc_integration_service" groups="mc_core.group_mc_manager"/>
 </odoo>

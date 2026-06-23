@@ -112,7 +112,7 @@ class McRawOrder(models.Model):
     # ── Timestamps ────────────────────────────────────────────────────────────
 
     received_at = fields.Datetime(
-        string='Received At',
+        string='Thời gian nhận',
         default=fields.Datetime.now,
         required=True,
         readonly=True,
@@ -163,6 +163,7 @@ class McRawOrder(models.Model):
         """Parse button on form view. Only runs on new/error records."""
         for record in self.filtered(lambda r: r.state in ('new', 'error')):
             record._parse_raw_order()
+        return True
 
     def action_reprocess(self):
         """
@@ -229,6 +230,7 @@ class McRawOrder(models.Model):
         """Process button on form view. Only runs on parsed records."""
         for record in self.filtered(lambda r: r.state == 'parsed'):
             record._process_raw_order()
+        return True
 
     def action_process_all_parsed(self):
         """

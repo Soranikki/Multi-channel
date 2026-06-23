@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_mc_dashboard" name="Overview" parent="mc_core.menu_mc_root" action="action_mc_dashboard" sequence="5" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_dashboard" name="Dashboard Kinh doanh" parent="mc_core.menu_mc_root" action="action_mc_dashboard" sequence="5" groups="mc_core.group_mc_user"/>
 </odoo>

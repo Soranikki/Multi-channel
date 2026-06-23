@@ -1,0 +1,300 @@
+2026-06-17 16:35:59,537 75119 INFO ? odoo: Odoo version 17.0 
+2026-06-17 16:35:59,537 75119 INFO ? odoo: Using configuration file at /home/soranikki/odoo-dev/Multi-channel/conf/odoo.conf 
+2026-06-17 16:35:59,537 75119 INFO ? odoo: addons paths: ['/home/soranikki/odoo-dev/Multi-channel/odoo/addons', '/home/soranikki/.local/share/Odoo/addons/17.0', '/home/soranikki/odoo-dev/Multi-channel/addons', '/home/soranikki/odoo-dev/Multi-channel/my_addons'] 
+2026-06-17 16:35:59,537 75119 INFO ? odoo: database: khanh@localhost:5432 
+2026-06-17 16:35:59,635 75119 INFO ? odoo.addons.base.models.ir_actions_report: Will use the Wkhtmltopdf binary at /usr/local/bin/wkhtmltopdf 
+2026-06-17 16:35:59,793 75119 INFO ? odoo.service.server: Initiating shutdown 
+2026-06-17 16:35:59,793 75119 INFO ? odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-06-17 16:35:59,816 75119 INFO Multi-Channel odoo.modules.loading: loading 1 modules... 
+2026-06-17 16:35:59,823 75119 INFO Multi-Channel odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 extra) 
+2026-06-17 16:35:59,848 75119 INFO Multi-Channel odoo.modules.loading: loading 60 modules... 
+2026-06-17 16:36:00,295 75119 INFO Multi-Channel odoo.modules.loading: 60 modules loaded in 0.45s, 0 queries (+0 extra) 
+2026-06-17 16:36:00,420 75119 INFO Multi-Channel odoo.modules.loading: Modules loaded. 
+2026-06-17 16:36:00,424 75119 INFO Multi-Channel odoo.modules.registry: Registry loaded in 0.630s 
+2026-06-17 16:40:22,332 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4121: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 1.0) 
+2026-06-17 16:40:22,358 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4122: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 1.0) 
+2026-06-17 16:40:23,330 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4132: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 1.0) 
+2026-06-17 16:40:24,801 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4145: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:28,972 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4182: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:30,073 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4191: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:40:32,172 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4207: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:32,694 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4211: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:35,645 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4230: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:37,284 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4246: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:37,743 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4250: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:39,601 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4268: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:39,924 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4271: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:40,293 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4274: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:40:40,768 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4278: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:41,200 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4282: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:41,465 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4284: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:41,507 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4285: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:41,732 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4287: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:43,603 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4300: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:44,513 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4305: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:45,881 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4314: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:46,538 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4318: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:49,139 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4336: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:50,122 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4344: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:50,181 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4345: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:50,599 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4348: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:52,547 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4361: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:52,766 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4363: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:54,558 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4377: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:54,595 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4378: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:40:56,045 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4389: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:56,421 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4392: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:40:58,112 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4405: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:40:59,619 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4416: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:00,602 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4424: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:01,389 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4429: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:01,698 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4432: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:04,014 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4449: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:04,837 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4455: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:06,372 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4465: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:06,409 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4466: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:07,215 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4471: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:08,642 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4481: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:10,494 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4496: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:13,912 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4524: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 2.0, Avail: 1.0) 
+2026-06-17 16:41:14,260 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4527: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:14,292 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4528: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:14,531 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4530: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 2.0, Avail: 1.0) 
+2026-06-17 16:41:15,069 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4534: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:15,587 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4538: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:16,548 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4546: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:17,586 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4552: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:18,050 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4554: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:20,624 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4567: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:21,474 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4573: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:23,072 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4583: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:23,346 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4585: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:23,390 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4586: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:24,500 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4594: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:25,123 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4598: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:25,539 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4601: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:26,266 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4606: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:26,524 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4608: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:26,784 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4610: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:27,103 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4613: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:27,337 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4615: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:28,264 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4621: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:28,308 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4622: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:29,037 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4627: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:29,076 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4628: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:29,410 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4631: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:29,548 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4633: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:29,790 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4635: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:30,111 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4638: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:30,445 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4641: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:31,752 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4650: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:33,259 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4661: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:34,098 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4668: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:34,656 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4672: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:35,352 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4677: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:35,746 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4680: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:35,786 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4681: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:35,827 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4682: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:35,871 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4683: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:36,695 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4689: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:37,998 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4698: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:38,561 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4702: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:38,808 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4704: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:40,169 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4712: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:40,432 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4714: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:40,853 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4717: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:42,167 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4726: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:42,205 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4727: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:42,814 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4731: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:42,857 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4732: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:43,295 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4735: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:44,057 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4740: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:44,307 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4742: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:44,346 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4743: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:44,769 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4746: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:45,020 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4748: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:46,315 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4757: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:46,773 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4760: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:46,812 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4761: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:47,378 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4765: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:48,123 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4770: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:48,369 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4772: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:48,616 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4774: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:50,142 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4785: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:51,038 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4791: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:51,958 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4797: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:52,001 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4798: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:52,557 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4803: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:56,452 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4829: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:41:56,795 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4832: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:56,833 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4833: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:57,899 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4841: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:41:57,938 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4842: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:59,381 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4851: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:41:59,784 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4855: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:42:00,563 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4860: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:42:00,959 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4864: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:42:02,290 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4872: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:42:03,730 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4882: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:42:04,742 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4889: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:42:06,811 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4902: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:42:07,865 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4910: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:42:08,764 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4916: Overselling prevented: Not enough stock for:
+  - TT-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:42:09,007 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4918: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 2.0, Avail: 0.0) 
+2026-06-17 16:42:09,046 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4919: Overselling prevented: Not enough stock for:
+  - SHP-SKU-71449 (Req: 1.0, Avail: 0.0) 
+2026-06-17 16:42:09,083 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4920: Overselling prevented: Not enough stock for:
+  - TT-SKU-44974 (Req: 3.0, Avail: 0.0) 
+2026-06-17 16:42:09,493 75119 WARNING Multi-Channel odoo.addons.mc_sale_order.models.mc_raw_order: mc.raw.order process failed id=4923: Overselling prevented: Not enough stock for:
+  - SHP-SKU-44974 (Req: 2.0, Avail: 0.0) 
+Starting Fake Data Generation...
+Creating new products and inventory for demo...
+Generating historical orders (This might take a few minutes)...
+Committed orders up to 2025-02-01...
+Committed orders up to 2025-03-01...
+Committed orders up to 2025-04-01...
+Committed orders up to 2025-05-01...
+Committed orders up to 2025-06-01...
+Committed orders up to 2025-07-01...
+Committed orders up to 2025-08-01...
+Committed orders up to 2025-09-01...
+Committed orders up to 2025-10-01...
+Committed orders up to 2025-11-01...
+Committed orders up to 2025-12-01...
+Committed orders up to 2026-01-01...
+Committed orders up to 2026-02-01...
+Committed orders up to 2026-03-01...
+Committed orders up to 2026-04-01...
+Committed orders up to 2026-05-01...
+Committed orders up to 2026-06-01...
+Done! Total orders generated: 3100
