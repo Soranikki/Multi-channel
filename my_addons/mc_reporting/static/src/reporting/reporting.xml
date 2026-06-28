@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mc_reporting.Reporting" owl="1">
+        <div class="mc-reporting-container">
+            <!-- Header -->
+            <div class="mc-report-header d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-0 fw-bold">
+                        <t t-if="state.reportType == 'sales_summary'"><i class="fa fa-line-chart me-2 text-primary"></i></t>
+                        <t t-if="state.reportType == 'sales_channel'"><i class="fa fa-pie-chart me-2 text-primary"></i></t>
+                        <t t-if="state.reportType == 'best_selling'"><i class="fa fa-trophy me-2 text-primary"></i></t>
+                        <t t-if="state.reportType == 'inventory'"><i class="fa fa-cubes me-2 text-primary"></i></t>
+                        <t t-if="state.reportType == 'sync_status'"><i class="fa fa-refresh me-2 text-primary"></i></t>
+                        <t t-if="state.reportType == 'order_list'"><i class="fa fa-file-text me-2 text-primary"></i></t>
+                        Báo cáo <t t-esc="reportName"/>
+                    </h2>
+                    <small class="text-muted">Cập nhật lúc: <t t-esc="updateTime"/></small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Export buttons -->
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" t-on-click="exportPDF" t-att-disabled="state.loading">
+                        <i class="fa fa-file-pdf-o me-1"></i> PDF
+                    </button>
+                    <button class="btn btn-sm btn-outline-success rounded-pill px-3" t-on-click="exportXLSX" t-att-disabled="state.loading">
+                        <i class="fa fa-file-excel-o me-1"></i> Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="mc-filter-bar d-flex flex-wrap align-items-center gap-3 mb-4 p-3">
+                <div class="mc-date-picker dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill" type="button" data-bs-toggle="dropdown">
+                        <i class="fa fa-calendar me-1"></i> <t t-esc="state.currentDateLabel"/>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width: 260px; border-radius: 12px; padding: 12px 0;">
+                        <a class="dropdown-item py-2" t-att-class="state.dateFilter == 'today' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('today', 'Hôm nay')">Hôm nay</a>
+                        <a class="dropdown-item py-2" t-att-class="state.dateFilter == '7d' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('7d', '7 ngày qua')">7 ngày qua</a>
+                        <a class="dropdown-item py-2" t-att-class="state.dateFilter == '30d' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('30d', '30 ngày qua')">30 ngày qua</a>
+                        <a class="dropdown-item py-2" t-att-class="state.dateFilter == '90d' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('90d', '90 ngày qua')">90 ngày qua</a>
+                        <a class="dropdown-item py-2" t-att-class="state.dateFilter == '1y' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changeDateFilter('1y', '1 năm qua')">1 năm qua</a>
+                        <div class="dropdown-divider my-2"></div>
+                        <div class="px-3 py-2">
+                            <label class="text-muted small fw-bold text-uppercase mb-2">Tùy Chỉnh</label>
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <input type="date" class="form-control form-control-sm" t-model="state.customStartDate"/>
+                                <span class="text-muted">-</span>
+                                <input type="date" class="form-control form-control-sm" t-model="state.customEndDate"/>
+                            </div>
+                            <button class="btn btn-dark w-100 rounded-3 btn-sm" t-on-click="applyCustomDate">Áp dụng</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mc-platform-picker dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill" type="button" data-bs-toggle="dropdown">
+                        <i class="fa fa-globe me-1"></i> <t t-esc="state.currentPlatformLabel"/>
+                    </button>
+                    <div class="dropdown-menu shadow border-0" style="border-radius: 12px; padding: 8px 0;">
+                        <a class="dropdown-item py-2" t-att-class="state.platformFilter == 'all' ? 'active' : ''" href="#" t-on-click.prevent="() => this.changePlatform('all', 'Tất cả kênh')">Tất cả kênh</a>
+                        <t t-foreach="platforms" t-as="p" t-key="p.id">
+                            <a class="dropdown-item py-2" t-att-class="state.platformFilter == p.code ? 'active' : ''" href="#" t-on-click.prevent="() => this.changePlatform(p.code, p.name)"><t t-esc="p.name"/></a>
+                        </t>
+                    </div>
+                </div>
+
+                <t t-if="state.loading">
+                    <span class="ms-auto text-primary"><i class="fa fa-spinner fa-spin me-1"></i>Đang tải...</span>
+                </t>
+            </div>
+
+            <!-- Loading -->
+            <t t-if="state.loading">
+                <div class="text-center py-5">
+                    <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+                    <p class="text-muted mt-2">Đang tải dữ liệu...</p>
+                </div>
+            </t>
+
+            <!-- Content -->
+            <t t-else="">
+                <!-- KPIs -->
+                <div class="row g-3 mb-4">
+                    <t t-if="state.reportType == 'sales_summary'">
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tổng Doanh thu</div><div class="value"><t t-esc="state.data.kpis.total_revenue_str"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Số Đơn hàng</div><div class="value"><t t-esc="state.data.kpis.total_orders"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Giá trị TB/Đơn</div><div class="value"><t t-esc="state.data.kpis.aov_str"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tăng trưởng</div><div class="value" t-att-class="state.data.kpis.growth_up ? 'text-success' : 'text-danger'"><t t-esc="state.data.kpis.growth"/></div></div></div>
+                    </t>
+                    <t t-if="state.reportType == 'sales_channel'">
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tổng Doanh thu</div><div class="value"><t t-esc="state.data.kpis.total_revenue_str"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Số Kênh</div><div class="value"><t t-esc="state.data.kpis.total_channels"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Kênh Cao nhất</div><div class="value text-primary"><t t-esc="state.data.kpis.top_channel"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tỷ trọng</div><div class="value"><t t-esc="state.data.kpis.top_channel_pct"/>%</div></div></div>
+                    </t>
+                    <t t-if="state.reportType == 'best_selling'">
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tổng SP đã bán</div><div class="value"><t t-esc="state.data.kpis.total_qty"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tổng Doanh thu</div><div class="value"><t t-esc="state.data.kpis.total_revenue_str"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Số SP</div><div class="value"><t t-esc="state.data.kpis.total_products"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Top SKU</div><div class="value text-primary"><t t-esc="state.data.kpis.top_sku"/></div></div></div>
+                    </t>
+                    <t t-if="state.reportType == 'inventory'">
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tổng SP</div><div class="value"><t t-esc="state.data.kpis.total_products"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Còn hàng</div><div class="value text-success"><t t-esc="state.data.kpis.in_stock"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Sắp hết</div><div class="value text-warning"><t t-esc="state.data.kpis.low_stock"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Hết hàng</div><div class="value text-danger"><t t-esc="state.data.kpis.out_of_stock"/></div></div></div>
+                    </t>
+                    <t t-if="state.reportType == 'sync_status'">
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tổng Mapping</div><div class="value"><t t-esc="state.data.kpis.total_mappings"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Đã đồng bộ</div><div class="value text-success"><t t-esc="state.data.kpis.synced"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Chờ xử lý</div><div class="value text-warning"><t t-esc="state.data.kpis.pending"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Lỗi</div><div class="value text-danger"><t t-esc="state.data.kpis.error"/></div></div></div>
+                    </t>
+                    <t t-if="state.reportType == 'order_list'">
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Tổng Đơn</div><div class="value"><t t-esc="state.data.kpis.total_orders"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Doanh thu</div><div class="value"><t t-esc="state.data.kpis.total_revenue_str"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Đã xác nhận</div><div class="value text-success"><t t-esc="state.data.kpis.confirmed"/></div></div></div>
+                        <div class="col"><div class="mc-kpi-card"><div class="label">Đã hủy</div><div class="value text-danger"><t t-esc="state.data.kpis.cancelled"/></div></div></div>
+                    </t>
+                </div>
+
+                <!-- Chart + Table -->
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="mc-card h-100">
+                            <h5 class="fw-bold mb-1">
+                                <t t-if="state.reportType == 'sales_summary'">Xu hướng Doanh thu</t>
+                                <t t-if="state.reportType == 'sales_channel'">Doanh thu theo Kênh</t>
+                                <t t-if="state.reportType == 'best_selling'">Top Sản phẩm Bán chạy</t>
+                                <t t-if="state.reportType == 'inventory'">Phân bổ Tồn kho</t>
+                                <t t-if="state.reportType == 'sync_status'">Trạng thái Đồng bộ</t>
+                                <t t-if="state.reportType == 'order_list'">Trạng thái Đơn hàng</t>
+                            </h5>
+                            <p class="text-muted small mb-3">
+                                <t t-if="state.reportType == 'sales_summary'">Biến động doanh thu theo thời gian</t>
+                                <t t-if="state.reportType == 'sales_channel'">So sánh doanh thu giữa các kênh</t>
+                                <t t-if="state.reportType == 'best_selling'">Sản phẩm bán chạy nhất theo số lượng</t>
+                                <t t-if="state.reportType == 'inventory'">Tỷ lệ hàng còn, sắp hết và hết hàng</t>
+                                <t t-if="state.reportType == 'sync_status'">Tình trạng đồng bộ tồn kho lên kênh</t>
+                                <t t-if="state.reportType == 'order_list'">Phân bổ trạng thái đơn hàng</t>
+                            </p>
+                            <div class="mc-chart-container">
+                                <canvas t-ref="mainChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="mc-card h-100">
+                            <h5 class="fw-bold mb-1">Chi tiết</h5>
+                            <p class="text-muted small mb-3">Dữ liệu chi tiết</p>
+                            <div class="mc-table-wrapper">
+                                <!-- Sales Summary Table -->
+                                <t t-if="state.reportType == 'sales_summary'">
+                                    <table class="table table-sm mc-data-table">
+                                        <thead><tr><th>Ngày</th><th class="text-end">Doanh thu</th><th class="text-end">Số đơn</th><th class="text-end">TB/Đơn</th></tr></thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.table" t-as="r" t-key="r.date">
+                                                <tr><td><t t-esc="r.date"/></td><td class="text-end"><t t-esc="r.revenue_str"/></td><td class="text-end"><t t-esc="r.orders"/></td><td class="text-end"><t t-esc="r.aov_str"/></td></tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <!-- Sales Channel Table -->
+                                <t t-if="state.reportType == 'sales_channel'">
+                                    <table class="table table-sm mc-data-table">
+                                        <thead><tr><th>Kênh</th><th class="text-end">Doanh thu</th><th class="text-end">Số đơn</th><th class="text-end">Tỷ trọng</th></tr></thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.channels" t-as="c" t-key="c.code">
+                                                <tr><td><t t-esc="c.name"/></td><td class="text-end"><t t-esc="c.revenue_str"/></td><td class="text-end"><t t-esc="c.orders"/></td><td class="text-end"><t t-esc="c.percentage"/>%</td></tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <!-- Best Selling Table -->
+                                <t t-if="state.reportType == 'best_selling'">
+                                    <table class="table table-sm mc-data-table">
+                                        <thead><tr><th>#</th><th>SKU</th><th>Tên SP</th><th class="text-end">SL</th><th class="text-end">Doanh thu</th><th class="text-end">%</th></tr></thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.products" t-as="p" t-key="p.rank">
+                                                <tr><td><t t-esc="p.rank"/></td><td><t t-esc="p.sku"/></td><td><t t-esc="p.name"/></td><td class="text-end"><t t-esc="p.qty"/></td><td class="text-end"><t t-esc="p.revenue_str"/></td><td class="text-end"><t t-esc="p.percentage"/>%</td></tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <!-- Inventory Table -->
+                                <t t-if="state.reportType == 'inventory'">
+                                    <table class="table table-sm mc-data-table">
+                                        <thead><tr><th>SKU</th><th>Tên SP</th><th class="text-end">Tồn</th><th class="text-end">Đặt</th><th class="text-end">Dự báo</th><th>Trạng thái</th></tr></thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.products" t-as="p" t-key="p.product_id">
+                                                <tr>
+                                                    <td><t t-esc="p.sku"/></td><td><t t-esc="p.name"/></td><td class="text-end"><t t-esc="p.qty_on_hand"/></td><td class="text-end"><t t-esc="p.qty_reserved"/></td><td class="text-end"><t t-esc="p.qty_forecast"/></td>
+                                                    <td>
+                                                        <t t-if="p.stock_status == 'in_stock'"><span class="mc-badge mc-badge-success">Còn hàng</span></t>
+                                                        <t t-if="p.stock_status == 'low_stock'"><span class="mc-badge mc-badge-warning">Sắp hết</span></t>
+                                                        <t t-if="p.stock_status == 'out_of_stock'"><span class="mc-badge mc-badge-danger">Hết hàng</span></t>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <!-- Sync Status Table -->
+                                <t t-if="state.reportType == 'sync_status'">
+                                    <table class="table table-sm mc-data-table">
+                                        <thead><tr><th>SKU</th><th>Kênh</th><th class="text-end">Tồn Odoo</th><th class="text-end">Đã đồng bộ</th><th>Trạng thái</th><th>Lần cuối</th></tr></thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.mappings" t-as="m" t-key="m.mapping_id">
+                                                <tr>
+                                                    <td><t t-esc="m.sku"/></td><td><t t-esc="m.channel"/></td><td class="text-end"><t t-esc="m.odoo_qty"/></td><td class="text-end"><t t-esc="m.synced_qty"/></td>
+                                                    <td>
+                                                        <t t-if="m.status == 'synced'"><span class="mc-badge mc-badge-success">OK</span></t>
+                                                        <t t-if="m.status == 'pending'"><span class="mc-badge mc-badge-warning">Chờ</span></t>
+                                                        <t t-if="m.status == 'error'"><span class="mc-badge mc-badge-danger">Lỗi</span></t>
+                                                    </td>
+                                                    <td class="small"><t t-esc="m.last_sync"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <!-- Order List Table -->
+                                <t t-if="state.reportType == 'order_list'">
+                                    <table class="table table-sm mc-data-table">
+                                        <thead><tr><th>Mã đơn</th><th>Ngày</th><th>Kênh</th><th>Khách</th><th class="text-end">Tiền</th><th>Trạng thái</th></tr></thead>
+                                        <tbody>
+                                            <t t-foreach="state.data.orders" t-as="o" t-key="o.id">
+                                                <tr>
+                                                    <td><t t-esc="o.name"/></td><td><t t-esc="o.date"/></td><td><t t-esc="o.channel"/></td><td><t t-esc="o.customer"/></td><td class="text-end"><t t-esc="o.total_str"/></td>
+                                                    <td><span class="mc-badge" t-att-class="'mc-badge-' + o.state"><t t-esc="o.state_label"/></span></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

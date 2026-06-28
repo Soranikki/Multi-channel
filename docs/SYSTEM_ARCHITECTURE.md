@@ -311,12 +311,10 @@ Polling vẫn cần thiết để đảm bảo nhất quán cuối cùng:
 | Field | Type | Default | Mục đích |
 |---|---|---|---|
 | `integration_enabled` | Boolean | False | Bật/tắt realtime |
-| `auto_parse_orders` | Boolean | True | Tự động parse khi nhận |
-| `auto_check_mapping` | Boolean | True | Tự động check mapping |
-| `auto_process_orders` | Boolean | True | Tự động tạo SO |
-| `auto_reconcile_orders` | Boolean | True | Tự động reconcile |
 | `strict_stock_check` | Boolean | True | Chống overselling |
 | `last_realtime_received_at` | Datetime | — | Event gần nhất |
+| `middleware_channel_key` | Char | — | Key platform dùng bởi middleware (shopee/tiktok) |
+| `middleware_config_json` | Text | — | Snapshot config middleware khi archive channel |
 
 **Fields mới trên `mc.raw.order`:**
 
@@ -337,11 +335,11 @@ def ingest_normalized_order(self, payload: dict) -> dict:
 ```
 
 1. Parse channel_code + external_order_id từ payload
-2. Tìm/cập nhật raw_order
-3. Nếu `auto_parse_orders` → parse
-4. Nếu `auto_check_mapping` → check mapping
-5. Nếu `auto_process_orders` + state=parsed + mapping hợp lệ → process
-6. Nếu `auto_reconcile_orders` → reconcile
+2. Tìm/cập nhật raw_order (IntegrityError-safe)
+3. Parse raw payload → state=parsed
+4. Check product mapping (`mapping_status`: mapped/partial/unmapped)
+5. Nếu state=parsed + mapping_status in (mapped, unchecked) → process (upsert sale.order)
+6. Reconcile với sale.order (so sánh canonical status)
 
 **Canonical mapping (Shopee → standardized):**
 
@@ -386,20 +384,21 @@ def ingest_normalized_order(self, payload: dict) -> dict:
 
 ```yaml
 services:
-  middleware:        # port 8020 — Central message broker
-  mock-shopee-api:  # port 8011 — Mock Shopee platform
-  mock-tiktok-api:  # port 8012 — Mock TikTok platform
-  odoo-ws-connector:# port 8030 — Bridge to Odoo
+  integration-postgres:# port 5433 — PostgreSQL 16 event store
+  middleware:          # port 8020 — Central message broker
+  mock-shopee-api:    # port 8011 — Mock Shopee platform
+  mock-tiktok-api:    # port 8012 — Mock TikTok platform
+  odoo-ws-connector:  # port 8030 — Bridge to Odoo
 ```
 
 ### 4.2 mock-shopee-api / mock-tiktok-api
 
-**Mục đích:** Mô phỏng WebSocket platform. Đọc file `data/orders.json`, gửi order events qua WebSocket đến middleware.
+**Mục đích:** Mô phỏng platform thương mại điện tử. Đọc file `data/orders.json`, gửi order events dạng HTTP POST webhook (HMAC-signed) đến middleware.
 
 **Endpoints:**
 | Method | Path | Mục đích |
 |---|---|---|
-| WS | (client) → middleware | Gửi order events |
+| POST | `/webhook/shopee` (outbound) | Gửi order events HTTP webhook đến middleware |
 | GET | `/health` | Health check |
 | GET | `/orders` | Danh sách order mock |
 | PUT | `/api/v1/products/{sku}/inventory` | Nhận stock update từ middleware |
@@ -435,7 +434,8 @@ services:
 Shopee raw format:
 { order_sn, order_status, payment_status, items: [{item_sku, ...}], ... }
   │
-  ▼  shopee_adapter.normalize()
+  ▼  normalizer.normalize_event() → resolver.resolve_all()
+  │   Sử dụng config-driven field mappings từ default_configs.py
   │
 Normalized format:
 { channel_code, external_order_id, platform_order_status,
@@ -444,10 +444,11 @@ Normalized format:
   ▼  broadcast_to_odoo()
 ```
 
-**Adapter pattern:**
-- `adapters/shopee_adapter.py`: `normalize()`, `push_inventory()`
-- `adapters/tiktok_adapter.py`: `normalize()`, `push_inventory()`
-- Mỗi platform implement theo format riêng → output chung canonical format
+**Normalization mechanism:**
+- `normalizer.py`: `normalize_event(platform, event)` — generic normalization dùng field mappings từ ChannelConfig
+- `resolver.py`: `resolve_all()` — áp dụng dot-path field mappings (ví dụ `order_sn` → `external_order_id`)
+- `data/default_configs.py`: Định nghĩa seed config mappings cho Shopee & TikTok
+- `adapters/shopee_adapter.py` / `adapters/tiktok_adapter.py`: Các hàm `normalize()` và `push_inventory()` độc lập (có thể dùng thay thế cho generic path, hiện tại không được runtime gọi trực tiếp)
 
 **Outbound inventory flow:**
 ```
@@ -490,35 +491,37 @@ Odoo → Connector → POST /api/outbound/inventory
 ```
 [Mock Shopee]                     [Mock TikTok]
       │                                │
-      │  WebSocket                     │  WebSocket
+      │  HTTP POST webhook             │  HTTP POST webhook
+      │  (HMAC-signed)                 │  (HMAC-signed)
       ▼                                ▼
 ┌─────────────────────────────────────────┐
 │           MIDDLEWARE (FastAPI)          │
 │  • Nhận raw event                       │
-│  • Normalize (adapter)                  │
+│  • Normalize (config-driven resolver)   │
 │  • Lưu raw_events.jsonl                 │
+│  • Lưu integration_events (PostgreSQL)  │
 │  • Broadcast normalized đến Odoo        │
 └──────────────────┬──────────────────────┘
-                   │  WebSocket
-                   ▼
+                    │  WebSocket (/ws/odoo)
+                    ▼
 ┌─────────────────────────────────────────┐
 │        ODOO WS CONNECTOR                │
-│  • Nhận normalized event                │
+│  • Nhận normalized event (WS)           │
 │  • Gọi XML-RPC ingest_normalized_order  │
 │  • Gửi ACK/NACK về middleware           │
 └──────────────────┬──────────────────────┘
-                   │  XML-RPC (localhost:8069)
-                   ▼
+                    │  XML-RPC (host.docker.internal:8069)
+                    ▼
 ┌─────────────────────────────────────────┐
 │         ODOO - mc.channel               │
 │  ingest_normalized_order()              │
 │                                         │
 │  1. Tìm channel theo channel_code       │
 │  2. Tạo/cập nhật mc.raw.order           │ 
-│  3. Parse (nếu bật auto_parse)          │
-│  4. Check mapping (nếu bật)             │
-│  5. Process → upsert SO (nếu bật)       │
-│  6. Reconcile (nếu bật)                 │
+│  3. Parse → state=parsed                │
+│  4. Check mapping → mapping_status      │
+│  5. Process → upsert SO (nếu hợp lệ)    │
+│  6. Reconcile với sale.order            │
 └─────────────────────────────────────────┘
 ```
 
@@ -597,7 +600,7 @@ ingest_normalized_order(payload)
   │     ├── CREATE nếu chưa tồn tại
   │     └── UPDATE nếu đã tồn tại (kiểm tra stale event)
   │
-  ├── 3. [auto_parse_orders] action_parse()
+  ├── 3. action_parse()
   │     └── _parse_raw_order()
   │           ├── Load JSON từ raw_payload
   │           ├── _extract_standard_payload() → validate
@@ -606,12 +609,12 @@ ingest_normalized_order(payload)
   │           │     └── Format: customer_name/phone/email, address, date
   │           └── Write: state=parsed, fields chuẩn hóa
   │
-  ├── 4. [auto_check_mapping] _check_product_mapping()
+  ├── 4. _check_product_mapping()
   │     ├── Search mc.product.mapping theo (channel_id, external_sku)
   │     ├── mapping_status: mapped / partial / unmapped
   │     └── Ghi mapped_product_count + unmapped_skus
   │
-  ├── 5. [auto_process_orders + state=parsed + mapping_status in (mapped, unchecked)]
+  ├── 5. [state=parsed + mapping_status in (mapped, unchecked)]
   │     └── action_process() → _process_raw_order()
   │           ├── _upsert_sale_order_from_raw()
   │           │     ├── Duyệt items → tìm mapping cho mỗi SKU
@@ -629,9 +632,9 @@ ingest_normalized_order(payload)
   │           │           │     └── confirmed/shipping/delivered → action_confirm()
   │           │           └── Write mc_order_status, mc_payment_status
   │           ├── state=processed, sale_order_id ghi lại
-  │           └── savepoint + rollback trên IntegrityError
+  │           └── savepoint + rollback trên IntegrityError (chỉ trong _process_raw_order)
   │
-  └── 6. [auto_reconcile_orders] _reconcile_with_sale_order()
+  └── 6. _reconcile_with_sale_order()
         ├── Nếu không có SO → skipped
         ├── _mc_apply_channel_statuses() (cập nhật lại SO)
         ├── So sánh canonical (desired) vs actual Odoo state
@@ -704,11 +707,11 @@ Connector giao tiếp với Odoo qua XML-RPC (port 8069):
 
 ```python
 # Authenticate
-common = xmlrpc.client.ServerProxy("http://odoo:8069/xmlrpc/2/common")
+common = xmlrpc.client.ServerProxy("http://host.docker.internal:8069/xmlrpc/2/common")
 uid = common.authenticate(db, username, password, {})
 
 # Call method
-models = xmlrpc.client.ServerProxy("http://odoo:8069/xmlrpc/2/object")
+models = xmlrpc.client.ServerProxy("http://host.docker.internal:8069/xmlrpc/2/object")
 result = models.execute_kw(db, uid, password, "mc.channel",
     "ingest_normalized_order", [payload])
 ```
@@ -727,8 +730,8 @@ Middleware → Odoo:      /ws/odoo                   (bidirectional ACK)
 
 Sử dụng `@api.model` + `with self.env.cr.savepoint()` cho:
 
-- `ingest_normalized_order()`: Bắt `IntegrityError` khi CREATE raw_order (race condition)
-- `_process_raw_order()`: Rollback nếu có conflict, giữ nguyên error state
+- `_process_raw_order()` trong `mc_sale_order/models/mc_raw_order.py`: Rollback nếu có IntegrityError conflict, giữ nguyên error state
+- `ingest_normalized_order()`: Bắt `IntegrityError` khi CREATE raw_order, gọi `self.env.cr.rollback()` thủ công (không dùng savepoint) → search lại raw_order → update
 - Cron jobs: Mỗi raw order được xử lý trong savepoint riêng → lỗi không ảnh hưởng toàn bộ batch
 
 ### 8.4 Type Hints
@@ -749,9 +752,11 @@ def _prepare_integration_vals_from_payload(self, payload: dict, ...) -> dict:
 ```
 Mock API     Middleware     Connector     Odoo mc.channel     mc.raw.order    sale.order
   │             │              │               │                  │               │
-  │──WS event──>│              │               │                  │               │
+  │──HTTP POST─>│              │               │                  │               │
+  │  (webhook)  │              │               │                  │               │
   │             │──normalize──>│               │                  │               │
-  │             │<──ACK────────│               │                  │               │
+  │             │  (WS push)   │               │                  │               │
+  │             │<──WS ACK─────│               │                  │               │
   │             │              │──XML-RPC──────>│                 │               │
   │             │              │               │──create──────────>               │
   │             │              │               │──parse───────────>               │

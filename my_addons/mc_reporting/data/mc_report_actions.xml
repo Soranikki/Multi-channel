@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+    <!-- PDF Report Actions (controller-based, no ir.actions.report needed) -->
+</odoo>

@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_mc_report" model="report.paperformat">
+        <field name="name">MC Report A4</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">3</field>
+        <field name="margin_bottom">3</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <template id="pdf_report_style">
+        <style>
+            body {
+                font-family: 'DejaVu Sans', sans-serif;
+                color: #1e293b;
+                font-size: 13.5pt;
+                line-height: 1.25;
+            }
+            .header {
+                display: flex; justify-content: space-between; align-items: center;
+                border-bottom: 2px solid #2563eb;
+                padding-bottom: 1px; margin-bottom: 2px;
+            }
+            .header .lh { display: flex; align-items: center; gap: 6px; }
+            .header .logo {
+                width: 24px; height: 24px;
+                background: linear-gradient(135deg, #2563eb, #1e40af);
+                border-radius: 5px;
+                display: flex; align-items: center; justify-content: center;
+                color: #fff; font-weight: 700; font-size: 12pt;
+            }
+            .header .ci h2 { font-size: 14pt; font-weight: 700; color: #1e293b; margin: 0; }
+            .header .ci p { font-size: 12pt; color: #64748b; margin: 0; }
+            .header .rm { text-align: right; font-size: 12pt; color: #64748b; }
+            .header .rm .rt { font-size: 14pt; font-weight: 700; color: #1e293b; }
+
+            .st { font-size: 13.5pt; font-weight: 700; color: #1e293b; margin: 0 0 2px; padding-bottom: 1px; border-bottom: 1.5px solid #e2e8f0; }
+
+            .sb { background: #fff; border: 1px solid #e2e8f0; border-radius: 3px; padding: 3px 6px; margin-bottom: 4px; }
+            .sb p { margin: 0; font-size: 13pt; color: #334155; }
+            .ib { background: #f0f7ff; border: 1px solid #dbeafe; border-radius: 3px; padding: 3px 6px; margin-bottom: 4px; }
+            .ib p { margin: 0; font-size: 13pt; color: #1e40af; }
+
+            table.dt { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+            table.dt thead th {
+                background: #2563eb; color: #fff;
+                font-size: 12pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2px;
+                padding: 3px 4px; text-align: left; border-right: 1px solid #3b82f6;
+            }
+            table.dt thead th:last-child { border-right: none; }
+            table.dt tbody td { font-size: 12pt; padding: 2px 4px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+            table.dt tbody tr:nth-child(even) { background: #f8fafc; }
+            table.dt tbody tr:last-child td { border-bottom: 1px solid #e2e8f0; }
+            table.dt tbody tr.total td { font-weight: 700; border-top: 2px solid #2563eb; background: #eff6ff; }
+
+            .bd { display: inline-block; padding: 1px 4px; border-radius: 6px; font-size: 11.5pt; font-weight: 700; }
+            .bd-g { background: #dcfce7; color: #166534; }
+            .bd-y { background: #fef9c3; color: #92400e; }
+            .bd-r { background: #fee2e2; color: #991b1b; }
+            .bd-b { background: #dbeafe; color: #1e40af; }
+
+            .ft {
+                margin-top: 3px; padding-top: 2px; border-top: 1px solid #e2e8f0;
+                font-size: 12pt; color: #94a3b8; text-align: center;
+            }
+
+            .tr { text-align: right; }
+            .tc { text-align: center; }
+            .fb { font-weight: 700; }
+        </style>
+    </template>
+
+    <template id="pdf_report_header">
+        <div class="header">
+            <div class="lh">
+                <div class="logo">MC</div>
+                <div class="ci">
+                    <h2><t t-out="doc.company_name"/></h2>
+                    <p>Hệ thống Quản lý Đa kênh</p>
+                </div>
+            </div>
+            <div class="rm">
+                <div class="rt"><t t-out="doc.title"/></div>
+                <div><t t-out="doc.date_label"/> · <t t-out="doc.platform_label"/></div>
+                <div><t t-out="doc.generated_at"/> · <t t-out="doc.generated_by"/></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="pdf_report_footer">
+        <div class="ft">
+            Được tạo bởi Hệ thống Quản lý Đa kênh — Trang <span class="page"/> / <span class="topage"/>
+        </div>
+    </template>
+
+    <!-- ── Sales Summary ──────────────────────────────────────────────── -->
+    <template id="pdf_sales_summary">
+        <t t-call="web.html_container">
+            <t t-call="mc_reporting.pdf_report_style"/>
+            <div class="page">
+                <t t-call="mc_reporting.pdf_report_header"/>
+
+                <table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 0;margin-bottom:6px;margin-top:2px;text-align:center;">
+                    <tr>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Doanh thu</div>
+                            <div style="font-size:23px;font-weight:bold;color:#0d6efd;"><t t-out="doc.kpis.total_revenue_str"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Số đơn</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.total_orders"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">TB/Đơn</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.aov_str"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Tăng trưởng</div>
+                            <div style="font-size:23px;font-weight:bold;" t-att-style="'color:' + (doc.kpis.growth_up and '#16a34a' or '#dc2626')"><t t-out="doc.kpis.growth"/></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.executive_summary">
+                    <div class="st">Tổng quan</div>
+                    <div class="sb"><p><t t-out="doc.executive_summary"/></p></div>
+                </t>
+                <t t-if="doc.business_insights">
+                    <div class="st">Phân tích</div>
+                    <div class="ib"><p><t t-out="doc.business_insights"/></p></div>
+                </t>
+
+                <t t-if="doc.svg_trend">
+                    <div class="st">Xu hướng doanh thu (<t t-out="doc.date_label"/>)</div>
+                    <t t-raw="doc.svg_trend"/>
+                </t>
+
+                <t t-if="doc.svg_hbar">
+                    <div class="st">Doanh thu theo kênh</div>
+                    <t t-raw="doc.svg_hbar"/>
+                </t>
+
+                <div class="st">Chi tiết theo ngày (<t t-out="doc.date_label"/>)</div>
+                <table class="dt">
+                    <thead><tr><th>Ngày</th><th class="tr">Doanh thu</th><th class="tr">Số đơn</th><th class="tr">TB/Đơn</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="doc.table" t-as="r">
+                            <tr><td><t t-out="r.date"/></td><td class="tr"><t t-out="r.revenue_str"/></td><td class="tr"><t t-out="r.orders"/></td><td class="tr"><t t-out="r.aov_str"/></td></tr>
+                        </t>
+                        <t t-if="doc.total_row">
+                            <tr class="total"><td>TỔNG</td><td class="tr"><t t-out="doc.total_row.revenue_str"/></td><td class="tr"><t t-out="doc.total_row.orders"/></td><td class="tr"><t t-out="doc.total_row.aov_str"/></td></tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <t t-call="mc_reporting.pdf_report_footer"/>
+            </div>
+        </t>
+    </template>
+
+    <!-- ── Sales Channel ──────────────────────────────────────────────── -->
+    <template id="pdf_sales_channel">
+        <t t-call="web.html_container">
+            <t t-call="mc_reporting.pdf_report_style"/>
+            <div class="page">
+                <t t-call="mc_reporting.pdf_report_header"/>
+
+                <table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 0;margin-bottom:6px;margin-top:2px;text-align:center;">
+                    <tr>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Doanh thu</div>
+                            <div style="font-size:23px;font-weight:bold;color:#0d6efd;"><t t-out="doc.kpis.total_revenue_str"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Số kênh</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.total_channels"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Kênh cao nhất</div>
+                            <div style="font-size:23px;font-weight:bold;color:#0d6efd;"><t t-out="doc.kpis.top_channel"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Tỷ trọng</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.top_channel_pct"/>%</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.executive_summary">
+                    <div class="st">Tổng quan</div>
+                    <div class="sb"><p><t t-out="doc.executive_summary"/></p></div>
+                </t>
+                <t t-if="doc.business_insights">
+                    <div class="st">Phân tích</div>
+                    <div class="ib"><p><t t-out="doc.business_insights"/></p></div>
+                </t>
+
+                <t t-if="doc.svg_trend">
+                    <div class="st">Xu hướng doanh thu (<t t-out="doc.date_label"/>)</div>
+                    <t t-raw="doc.svg_trend"/>
+                </t>
+
+                <t t-if="doc.svg_hbar">
+                    <div class="st">Doanh thu theo kênh</div>
+                    <t t-raw="doc.svg_hbar"/>
+                </t>
+
+                <div class="st">Chi tiết theo kênh</div>
+                <table class="dt">
+                    <thead><tr><th>Kênh</th><th class="tr">Doanh thu</th><th class="tr">Số đơn</th><th class="tr">Tỷ trọng</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="doc.channels" t-as="c">
+                            <tr><td><t t-out="c.name"/></td><td class="tr"><t t-out="c.revenue_str"/></td><td class="tr"><t t-out="c.orders"/></td><td class="tr"><t t-out="c.percentage"/>%</td></tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <t t-call="mc_reporting.pdf_report_footer"/>
+            </div>
+        </t>
+    </template>
+
+    <!-- ── Best Selling ───────────────────────────────────────────────── -->
+    <template id="pdf_best_selling">
+        <t t-call="web.html_container">
+            <t t-call="mc_reporting.pdf_report_style"/>
+            <div class="page">
+                <t t-call="mc_reporting.pdf_report_header"/>
+
+                <table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 0;margin-bottom:6px;margin-top:2px;text-align:center;">
+                    <tr>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">SL đã bán</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.total_qty"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Doanh thu</div>
+                            <div style="font-size:23px;font-weight:bold;color:#0d6efd;"><t t-out="doc.kpis.total_revenue_str"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Mặt hàng</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.total_products"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">SKU bán chạy</div>
+                            <div style="font-size:23px;font-weight:bold;color:#0d6efd;"><t t-out="doc.kpis.top_sku"/></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.executive_summary">
+                    <div class="st">Tổng quan</div>
+                    <div class="sb"><p><t t-out="doc.executive_summary"/></p></div>
+                </t>
+                <t t-if="doc.business_insights">
+                    <div class="st">Phân tích</div>
+                    <div class="ib"><p><t t-out="doc.business_insights"/></p></div>
+                </t>
+
+                <t t-if="doc.svg_channel">
+                    <div class="st">Doanh thu theo SP</div>
+                    <t t-raw="doc.svg_channel"/>
+                </t>
+
+                <t t-if="doc.svg_hbar">
+                    <div class="st">Doanh thu theo kênh</div>
+                    <t t-raw="doc.svg_hbar"/>
+                </t>
+
+                <div class="st">Top 20 sản phẩm</div>
+                <table class="dt">
+                    <thead><tr><th>#</th><th>SKU</th><th>Sản phẩm</th><th class="tr">SL</th><th class="tr">Doanh thu</th><th class="tr">%</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="doc.products" t-as="p">
+                            <tr><td><t t-out="p.rank"/></td><td><t t-out="p.sku"/></td><td><t t-out="p.name"/></td><td class="tr"><t t-out="p.qty"/></td><td class="tr"><t t-out="p.revenue_str"/></td><td class="tr"><t t-out="p.percentage"/>%</td></tr>
+                        </t>
+                        <t t-if="doc.total_row">
+                            <tr class="total"><td></td><td>TỔNG</td><td></td><td class="tr"><t t-out="doc.total_row.qty"/></td><td class="tr"><t t-out="doc.total_row.revenue_str"/></td><td></td></tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <t t-call="mc_reporting.pdf_report_footer"/>
+            </div>
+        </t>
+    </template>
+
+    <!-- ── Inventory ──────────────────────────────────────────────────── -->
+    <template id="pdf_inventory">
+        <t t-call="web.html_container">
+            <t t-call="mc_reporting.pdf_report_style"/>
+            <div class="page">
+                <t t-call="mc_reporting.pdf_report_header"/>
+
+                <table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 0;margin-bottom:6px;margin-top:2px;text-align:center;">
+                    <tr>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Tổng SP</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.total_products"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Còn hàng</div>
+                            <div style="font-size:23px;font-weight:bold;color:#16a34a;"><t t-out="doc.kpis.in_stock"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Sắp hết</div>
+                            <div style="font-size:23px;font-weight:bold;color:#d97706;"><t t-out="doc.kpis.low_stock"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Hết hàng</div>
+                            <div style="font-size:23px;font-weight:bold;color:#dc2626;"><t t-out="doc.kpis.out_of_stock"/></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.executive_summary">
+                    <div class="st">Tổng quan</div>
+                    <div class="sb"><p><t t-out="doc.executive_summary"/></p></div>
+                </t>
+                <t t-if="doc.business_insights">
+                    <div class="st">Phân tích</div>
+                    <div class="ib"><p><t t-out="doc.business_insights"/></p></div>
+                </t>
+
+                <div class="st">Chi tiết tồn kho</div>
+                <table class="dt">
+                    <thead><tr><th>SKU</th><th>Sản phẩm</th><th class="tr">Tồn</th><th class="tr">Đã đặt</th><th class="tr">Dự báo</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="doc.products" t-as="p">
+                            <tr>
+                                <td><t t-out="p.sku"/></td><td><t t-out="p.name"/></td>
+                                <td class="tr"><t t-out="p.qty_on_hand"/></td><td class="tr"><t t-out="p.qty_reserved"/></td><td class="tr"><t t-out="p.qty_forecast"/></td>
+                                <td>
+                                    <t t-if="p.stock_status == 'in_stock'"><span class="bd bd-g">Còn hàng</span></t>
+                                    <t t-if="p.stock_status == 'low_stock'"><span class="bd bd-y">Sắp hết</span></t>
+                                    <t t-if="p.stock_status == 'out_of_stock'"><span class="bd bd-r">Hết hàng</span></t>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <t t-call="mc_reporting.pdf_report_footer"/>
+            </div>
+        </t>
+    </template>
+
+    <!-- ── Sync Status ────────────────────────────────────────────────── -->
+    <template id="pdf_sync_status">
+        <t t-call="web.html_container">
+            <t t-call="mc_reporting.pdf_report_style"/>
+            <div class="page">
+                <t t-call="mc_reporting.pdf_report_header"/>
+
+                <table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 0;margin-bottom:6px;margin-top:2px;text-align:center;">
+                    <tr>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Mapping</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.total_mappings"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Đã đồng bộ</div>
+                            <div style="font-size:23px;font-weight:bold;color:#16a34a;"><t t-out="doc.kpis.synced"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Chờ</div>
+                            <div style="font-size:23px;font-weight:bold;color:#d97706;"><t t-out="doc.kpis.pending"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Lỗi</div>
+                            <div style="font-size:23px;font-weight:bold;color:#dc2626;"><t t-out="doc.kpis.error"/></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.executive_summary">
+                    <div class="st">Tổng quan</div>
+                    <div class="sb"><p><t t-out="doc.executive_summary"/></p></div>
+                </t>
+                <t t-if="doc.business_insights">
+                    <div class="st">Phân tích</div>
+                    <div class="ib"><p><t t-out="doc.business_insights"/></p></div>
+                </t>
+
+                <div class="st">Chi tiết đồng bộ</div>
+                <table class="dt">
+                    <thead><tr><th>SKU</th><th>Kênh</th><th class="tr">Tồn Odoo</th><th class="tr">Đã đồng bộ</th><th>Trạng thái</th><th>Lần cuối</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="doc.mappings" t-as="m">
+                            <tr>
+                                <td><t t-out="m.sku"/></td><td><t t-out="m.channel"/></td>
+                                <td class="tr"><t t-out="m.odoo_qty"/></td><td class="tr"><t t-out="m.synced_qty"/></td>
+                                <td>
+                                    <t t-if="m.status == 'synced'"><span class="bd bd-g">OK</span></t>
+                                    <t t-if="m.status == 'pending'"><span class="bd bd-y">Chờ</span></t>
+                                    <t t-if="m.status == 'error'"><span class="bd bd-r">Lỗi</span></t>
+                                </td>
+                                <td><t t-out="m.last_sync"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <t t-call="mc_reporting.pdf_report_footer"/>
+            </div>
+        </t>
+    </template>
+
+    <!-- ── Order List ─────────────────────────────────────────────────── -->
+    <template id="pdf_order_list">
+        <t t-call="web.html_container">
+            <t t-call="mc_reporting.pdf_report_style"/>
+            <div class="page">
+                <t t-call="mc_reporting.pdf_report_header"/>
+
+                <table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px 0;margin-bottom:6px;margin-top:2px;text-align:center;">
+                    <tr>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Tổng đơn</div>
+                            <div style="font-size:23px;font-weight:bold;color:#212529;"><t t-out="doc.kpis.total_orders"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Doanh thu</div>
+                            <div style="font-size:23px;font-weight:bold;color:#0d6efd;"><t t-out="doc.kpis.total_revenue_str"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Đã xác nhận</div>
+                            <div style="font-size:23px;font-weight:bold;color:#16a34a;"><t t-out="doc.kpis.confirmed"/></div>
+                        </td>
+                        <td style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:6px;">
+                            <div style="font-size:17px;font-weight:bold;color:#6c757d;text-transform:uppercase;margin-bottom:1px;">Đã hủy</div>
+                            <div style="font-size:23px;font-weight:bold;color:#dc2626;"><t t-out="doc.kpis.cancelled"/></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.executive_summary">
+                    <div class="st">Tổng quan</div>
+                    <div class="sb"><p><t t-out="doc.executive_summary"/></p></div>
+                </t>
+                <t t-if="doc.business_insights">
+                    <div class="st">Phân tích</div>
+                    <div class="ib"><p><t t-out="doc.business_insights"/></p></div>
+                </t>
+
+                <t t-if="doc.svg_hbar">
+                    <div class="st">Doanh thu theo kênh</div>
+                    <t t-raw="doc.svg_hbar"/>
+                </t>
+
+                <div class="st">Danh sách đơn hàng</div>
+                <table class="dt">
+                    <thead><tr><th>Mã đơn</th><th>Ngày</th><th>Kênh</th><th>Khách hàng</th><th class="tr">Tổng tiền</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="doc.orders" t-as="o">
+                            <tr>
+                                <td><t t-out="o.name"/></td><td><t t-out="o.date"/></td>
+                                <td><t t-out="o.channel"/></td><td><t t-out="o.customer"/></td>
+                                <td class="tr"><t t-out="o.total_str"/></td>
+                                <td><span class="bd" t-att-class="'bd-' + (o.state == 'sale' and 'b' or o.state == 'done' and 'g' or o.state == 'cancel' and 'r' or 'y')"><t t-out="o.state_label"/></span></td>
+                            </tr>
+                        </t>
+                        <t t-if="doc.total_row">
+                            <tr class="total"><td>TỔNG</td><td></td><td></td><td></td><td class="tr"><t t-out="doc.total_row.revenue_str"/></td><td></td></tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <t t-call="mc_reporting.pdf_report_footer"/>
+            </div>
+        </t>
+    </template>
+
+</odoo>

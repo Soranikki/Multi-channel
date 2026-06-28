@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_mc_reports" name="Báo cáo" parent="mc_core.menu_mc_root" sequence="50" groups="mc_core.group_mc_user"/>
+
+    <menuitem id="menu_mc_report_sales_summary" name="Tổng hợp Bán hàng" parent="menu_mc_reports" action="action_mc_report_sales_summary" sequence="10" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_report_sales_channel" name="Bán hàng theo Kênh" parent="menu_mc_reports" action="action_mc_report_sales_channel" sequence="20" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_report_best_selling" name="Sản phẩm Bán chạy" parent="menu_mc_reports" action="action_mc_report_best_selling" sequence="30" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_report_inventory" name="Tồn kho" parent="menu_mc_reports" action="action_mc_report_inventory" sequence="40" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_report_sync_status" name="Đồng bộ Tồn kho" parent="menu_mc_reports" action="action_mc_report_sync_status" sequence="50" groups="mc_core.group_mc_user"/>
+    <menuitem id="menu_mc_report_order_list" name="Danh sách Đơn hàng" parent="menu_mc_reports" action="action_mc_report_order_list" sequence="60" groups="mc_core.group_mc_user"/>
+</odoo>
